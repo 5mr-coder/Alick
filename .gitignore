@@ -1,0 +1,16 @@
+.vercel
+node_modules
+.next
+.env
+.env.local
+.env.*.local
+dist
+out
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+.DS_Store
+Thumbs.db
+freebuff
+
+# public assets that are external references only
+images.jpg
