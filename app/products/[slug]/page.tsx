@@ -1,69 +1,27 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { notFound } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
 import { ShinyButton } from '@/components/ui/shiny-button';
-import { ShoppingCart, Check, ArrowLeft, Info, Star } from 'lucide-react';
+import { ShoppingCart, ArrowLeft, Info } from 'lucide-react';
 import Link from 'next/link';
+import ShopModePicker from '@/components/shop/ShopModePicker';
 
-import { supabase } from '@/lib/supabase';
-import { Product } from '@/types';
+import { getProductBySlug } from '@/types';
 
 export default function ProductPage({ params }: { params: { slug: string } }) {
-  const { addToCart } = useCart();
+  const { addToCart, salesMode, setSalesMode, isLoaded } = useCart();
   const [added, setAdded] = useState(false);
   const [activeImage, setActiveImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
-  const [product, setProduct] = useState<Product | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  // Unwrap params if it's a promise (Next.js 14+ best practice for client components)
-  const [slug, setSlug] = useState<string | null>(null);
-  useEffect(() => {
-    Promise.resolve(params).then(p => setSlug(p.slug));
-  }, [params]);
-
-  const [reviews, setReviews] = useState<any[]>([]);
-  const [reviewForm, setReviewForm] = useState({ name: '', email: '', rating: 5, text: '' });
-  const [submittingReview, setSubmittingReview] = useState(false);
-  const [reviewSubmitted, setReviewSubmitted] = useState(false);
-  const [reviewError, setReviewError] = useState('');
+  const [showRetailPrompt, setShowRetailPrompt] = useState(false);
+  const product = getProductBySlug(params.slug);
 
   useEffect(() => {
-    async function fetchProduct() {
-      if (!slug) return;
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('products')
-        .select('*, category:categories(name)')
-        .eq('slug', slug)
-        .single();
-      
-      if (data && !error) {
-        setProduct(data);
-        setQuantity(1); // reset quantity when product loads
-        
-        const { data: reviewsData } = await supabase
-          .from('product_reviews')
-          .select('*')
-          .eq('product_id', data.id)
-          .eq('status', 'approved')
-          .order('created_at', { ascending: false });
-        setReviews(reviewsData || []);
-      }
-      setLoading(false);
-    }
-    fetchProduct();
-  }, [slug]);
-
-  if (loading) {
-    return (
-      <div style={{ background: 'var(--ash-950)', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <p style={{ color: 'var(--ash-400)' }}>Loading product details...</p>
-      </div>
-    );
-  }
+    if (!isLoaded || !salesMode) return;
+    setQuantity(salesMode === 'retail' ? 10 : 1);
+  }, [isLoaded, salesMode, product?.id]);
 
   if (!product) {
     notFound();
@@ -73,24 +31,8 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
     ? Math.round(((product.old_price - product.price) / product.old_price) * 100)
     : null;
 
-  const submitReview = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!product) return;
-    if (!reviewForm.name || !reviewForm.email || !reviewForm.text) { setReviewError('Please fill all fields'); return; }
-    setSubmittingReview(true); setReviewError('');
-    const { error } = await supabase.from('product_reviews').insert({
-      product_id: product.id,
-      reviewer_name: reviewForm.name,
-      reviewer_email: reviewForm.email,
-      rating: reviewForm.rating,
-      text: reviewForm.text,
-    });
-    setSubmittingReview(false);
-    if (error) setReviewError(error.message);
-    else { setReviewSubmitted(true); setReviewForm({ name: '', email: '', rating: 5, text: '' }); }
-  };
-
-  const handleAddToCart = () => {
+  const addProductToCart = () => {
+    if (!salesMode) return;
     addToCart({
       id: product.id,
       name: product.name,
@@ -98,15 +40,23 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
       quantity,
       stock: product.stock,
       image: product.images[0],
+      salesMode,
     });
     setAdded(true);
     setTimeout(() => setAdded(false), 2500);
   };
 
+  if (!isLoaded) return null;
+  if (!salesMode) return <ShopModePicker mode={salesMode} onChange={setSalesMode} />;
+
+  const retailUnavailable = salesMode === 'retail' && product.stock < 10;
+  const maximumQuantity = salesMode === 'consumer' ? Math.min(product.stock, 9) : product.stock;
+  const quantityLimitReached = quantity >= maximumQuantity && !(salesMode === 'consumer' && quantity >= 9);
+
   return (
     <div style={{ background: 'var(--ash-950)', minHeight: '100vh', paddingBottom: '6rem' }}>
       <div className="container" style={{ paddingTop: '2rem' }}>
-        {/* Breadcrumb */}
+        <ShopModePicker mode={salesMode} onChange={setSalesMode} compact />
         <Link
           href="/products"
           style={{
@@ -124,7 +74,6 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4rem', alignItems: 'start' }}
           className="product-grid">
 
-          {/* ── Images ── */}
           <div>
             <div style={{
               aspectRatio: '4/3', borderRadius: '16px', overflow: 'hidden',
@@ -156,16 +105,13 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
             )}
           </div>
 
-          {/* ── Details ── */}
           <div>
-            {/* Brand + category */}
             <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem', alignItems: 'center' }}>
               <span className="badge badge-gold">{product.category?.name || 'Uncategorized'}</span>
               <span style={{ color: 'var(--ash-400)', fontSize: '0.8rem' }}>·</span>
               <span style={{ color: 'var(--gold-400)', fontSize: '0.8rem', fontWeight: 600 }}>{product.brand}</span>
             </div>
 
-            {/* Name — explicit white so it's always readable */}
             <h1 style={{
               fontFamily: 'var(--font-display)',
               fontSize: 'clamp(1.75rem, 3.5vw, 2.75rem)',
@@ -177,7 +123,6 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
               {product.name}
             </h1>
 
-            {/* Price */}
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '1rem', marginBottom: '1.5rem' }}>
               <span style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--gold-400)' }}>
                 ₦{product.price.toLocaleString()}
@@ -192,12 +137,10 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
               )}
             </div>
 
-            {/* Description */}
             <p style={{ color: 'var(--ash-300)', lineHeight: 1.75, marginBottom: '2rem', fontSize: '0.975rem' }}>
               {product.description}
             </p>
 
-            {/* Specs */}
             <div style={{ marginBottom: '2.5rem' }}>
               <h3 style={{
                 display: 'flex', alignItems: 'center', gap: '0.5rem',
@@ -220,7 +163,6 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
               </dl>
             </div>
 
-            {/* Stock indicator */}
             <div style={{ marginBottom: '1.25rem' }}>
               {product.stock === 0 ? (
                 <span style={{
@@ -239,29 +181,42 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
               )}
             </div>
 
-            {/* Quantity selector */}
             {product.stock > 0 && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
                 <span style={{ color: 'var(--ash-400)', fontSize: '0.875rem' }}>Qty:</span>
                 <div style={{ display: 'flex', alignItems: 'center', border: '1px solid var(--border)', borderRadius: '8px', overflow: 'hidden' }}>
                   <button
-                    onClick={() => setQuantity(q => Math.max(1, q - 1))}
+                    onClick={() => setQuantity((current) => Math.max(salesMode === 'retail' ? 10 : 1, current - 1))}
+                    disabled={quantity <= (salesMode === 'retail' ? 10 : 1)}
+                    aria-label="Decrease quantity"
                     style={{ padding: '0.4rem 0.75rem', background: 'var(--ash-800)', color: 'white', border: 'none', cursor: 'pointer', fontSize: '1rem' }}
                   >−</button>
                   <span style={{ padding: '0.4rem 1rem', color: 'white', fontSize: '0.9rem', minWidth: '2.5rem', textAlign: 'center' }}>{quantity}</span>
                   <button
-                    onClick={() => setQuantity(q => Math.min(product.stock, q + 1))}
-                    disabled={quantity >= product.stock}
-                    style={{ padding: '0.4rem 0.75rem', background: 'var(--ash-800)', color: quantity >= product.stock ? 'var(--ash-600)' : 'white', border: 'none', cursor: quantity >= product.stock ? 'default' : 'pointer', fontSize: '1rem' }}
+                    onClick={() => {
+                      if (salesMode === 'consumer' && quantity >= 9) {
+                        setShowRetailPrompt(true);
+                        return;
+                      }
+                      setQuantity((current) => Math.min(maximumQuantity, current + 1));
+                    }}
+                    disabled={quantityLimitReached || retailUnavailable}
+                    aria-label="Increase quantity"
+                    style={{ padding: '0.4rem 0.75rem', background: 'var(--ash-800)', color: quantityLimitReached || retailUnavailable ? 'var(--ash-600)' : 'white', border: 'none', cursor: quantityLimitReached || retailUnavailable ? 'default' : 'pointer', fontSize: '1rem' }}
                   >+</button>
                 </div>
-                {quantity >= product.stock && (
+                {quantity >= maximumQuantity && !retailUnavailable && !(salesMode === 'consumer' && quantity >= 9) && (
                   <span style={{ color: 'var(--gold-400)', fontSize: '0.75rem', fontWeight: 600 }}>Selected all available</span>
                 )}
               </div>
             )}
 
-            {/* Add to Cart */}
+            {retailUnavailable && (
+              <p role="status" style={{ color: 'var(--gold-400)', lineHeight: 1.6, marginBottom: '1.25rem' }}>
+                Retail orders start at 10 units. There are {product.stock} listed in stock, so contact us to confirm bulk availability.
+              </p>
+            )}
+
             {product.stock === 0 ? (
               <button disabled style={{
                 width: '100%', padding: '0.875rem', borderRadius: '10px',
@@ -270,9 +225,18 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
               }}>
                 Out of Stock
               </button>
+            ) : retailUnavailable ? (
+              <a
+                href={`https://wa.me/2348030841357?text=${encodeURIComponent(`Hi, I would like to ask about a retail order of at least 10 ${product.name}.` )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ display: 'block', width: '100%', padding: '0.875rem', borderRadius: '10px', background: 'var(--gold-400)', color: '#111', textAlign: 'center', textDecoration: 'none', fontWeight: 700 }}
+              >
+                Ask about bulk availability
+              </a>
             ) : (
               <ShinyButton
-                onClick={handleAddToCart}
+                onClick={addProductToCart}
                 className={added ? 'shiny-added' : ''}
               >
                 {added ? '✓ Added to Cart!' : <><ShoppingCart size={16} style={{ display: 'inline', marginRight: '0.5rem', verticalAlign: 'middle' }} />Add to Cart</>}
@@ -282,70 +246,41 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
         </div>
       </div>
 
-      {/* Product Reviews Section */}
+      {showRetailPrompt && (
+        <div role="presentation" onClick={() => setShowRetailPrompt(false)} style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(0,0,0,0.72)', display: 'grid', placeItems: 'center', padding: '1rem' }}>
+          <div role="dialog" aria-modal="true" aria-labelledby="retail-prompt-title" onClick={(event) => event.stopPropagation()} style={{ width: '100%', maxWidth: '440px', padding: '2rem', borderRadius: '16px', border: '1px solid var(--border-gold)', background: 'var(--ash-900)', color: 'white' }}>
+            <h2 id="retail-prompt-title" style={{ fontSize: '1.4rem', marginBottom: '0.75rem' }}>Buying 10 or more?</h2>
+            <p style={{ color: 'var(--ash-300)', lineHeight: 1.6, marginBottom: '1.5rem' }}>
+              Switch to retail mode to place orders starting at 10 units per product.
+            </p>
+            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                onClick={() => { setSalesMode('retail'); setQuantity(10); setShowRetailPrompt(false); }}
+                style={{ flex: 1, padding: '0.8rem 1rem', border: 0, borderRadius: '8px', background: 'var(--gold-400)', color: '#111', fontWeight: 700, cursor: 'pointer' }}
+              >
+                Switch to retail mode
+              </button>
+              <button type="button" onClick={() => setShowRetailPrompt(false)} style={{ padding: '0.8rem 1rem', border: '1px solid var(--border)', borderRadius: '8px', background: 'transparent', color: 'white', cursor: 'pointer' }}>
+                Keep shopping
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="container" style={{ marginTop: '4rem', paddingTop: '4rem', borderTop: '1px solid var(--border)' }}>
         <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '2rem', color: '#fff', marginBottom: '2rem' }}>Customer Reviews</h2>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4rem' }} className="product-grid">
-          {/* Reviews List */}
           <div>
-            {reviews.length === 0 ? (
-              <p style={{ color: 'var(--ash-400)' }}>No reviews yet. Be the first to review!</p>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                {reviews.map(review => (
-                  <div key={review.id} style={{ background: 'var(--ash-900)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                      <span style={{ fontWeight: 600, color: '#fff' }}>{review.reviewer_name}</span>
-                      <div style={{ display: 'flex', gap: '2px', color: '#c9a84c' }}>
-                        {[...Array(5)].map((_, i) => (
-                          <Star key={i} size={14} fill={i < review.rating ? '#c9a84c' : 'transparent'} stroke={i < review.rating ? '#c9a84c' : 'var(--ash-600)'} />
-                        ))}
-                      </div>
-                    </div>
-                    <p style={{ color: 'var(--ash-300)', fontSize: '0.9rem', lineHeight: 1.6 }}>{review.text}</p>
-                  </div>
-                ))}
-              </div>
-            )}
+            <p style={{ color: 'var(--ash-400)' }}>No reviews yet. Be the first to review!</p>
           </div>
 
-          {/* Review Form */}
           <div style={{ background: 'var(--ash-900)', padding: '2rem', borderRadius: '12px', border: '1px solid var(--border)' }}>
             <h3 style={{ color: '#fff', fontSize: '1.25rem', marginBottom: '1.5rem', fontWeight: 600 }}>Write a Review</h3>
-            {reviewSubmitted ? (
-              <div style={{ background: 'rgba(34, 197, 94, 0.1)', color: '#22c55e', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(34, 197, 94, 0.2)' }}>
-                Thank you! Your review has been submitted and is pending approval.
-              </div>
-            ) : (
-              <form onSubmit={submitReview} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                {reviewError && <div style={{ color: 'var(--cyan-400)', fontSize: '0.875rem' }}>{reviewError}</div>}
-                <div>
-                  <label style={{ display: 'block', color: 'var(--ash-400)', fontSize: '0.875rem', marginBottom: '0.5rem' }}>Rating</label>
-                  <div style={{ display: 'flex', gap: '0.25rem' }}>
-                    {[1, 2, 3, 4, 5].map(star => (
-                      <button key={star} type="button" onClick={() => setReviewForm(f => ({...f, rating: star}))} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
-                        <Star size={24} fill={star <= reviewForm.rating ? '#c9a84c' : 'transparent'} stroke={star <= reviewForm.rating ? '#c9a84c' : 'var(--ash-500)'} />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <label style={{ display: 'block', color: 'var(--ash-400)', fontSize: '0.875rem', marginBottom: '0.5rem' }}>Name</label>
-                  <input type="text" value={reviewForm.name} onChange={e => setReviewForm(f => ({...f, name: e.target.value}))} style={{ width: '100%', padding: '0.75rem', background: 'var(--ash-950)', border: '1px solid var(--border)', borderRadius: '8px', color: '#fff' }} required />
-                </div>
-                <div>
-                  <label style={{ display: 'block', color: 'var(--ash-400)', fontSize: '0.875rem', marginBottom: '0.5rem' }}>Email</label>
-                  <input type="email" value={reviewForm.email} onChange={e => setReviewForm(f => ({...f, email: e.target.value}))} style={{ width: '100%', padding: '0.75rem', background: 'var(--ash-950)', border: '1px solid var(--border)', borderRadius: '8px', color: '#fff' }} required />
-                </div>
-                <div>
-                  <label style={{ display: 'block', color: 'var(--ash-400)', fontSize: '0.875rem', marginBottom: '0.5rem' }}>Review</label>
-                  <textarea value={reviewForm.text} onChange={e => setReviewForm(f => ({...f, text: e.target.value}))} rows={4} style={{ width: '100%', padding: '0.75rem', background: 'var(--ash-950)', border: '1px solid var(--border)', borderRadius: '8px', color: '#fff', resize: 'vertical' }} required />
-                </div>
-                <button type="submit" disabled={submittingReview} style={{ width: '100%', padding: '0.875rem', background: '#c9a84c', color: '#000', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: submittingReview ? 'not-allowed' : 'pointer' }}>
-                  {submittingReview ? 'Submitting...' : 'Submit Review'}
-                </button>
-              </form>
-            )}
+            <p style={{ color: 'var(--ash-400)', fontSize: '0.9rem', lineHeight: 1.6 }}>
+              Reviews are not available yet.
+            </p>
           </div>
         </div>
       </div>

@@ -1,25 +1,21 @@
 import Link from 'next/link';
 import AnimatedSection from '@/components/ui/AnimatedSection';
 import Button from '@/components/ui/Button';
-import { supabase } from '@/lib/supabase';
 import { notFound } from 'next/navigation';
+import { posts } from '@/types';
 
-export const revalidate = 60; // Revalidate cache every 60 seconds
+export const revalidate = 60;
 
 export default async function BlogPostPage({ params }: { params: { slug: string } }) {
-  const { data: post, error } = await supabase
-    .from('blogs')
-    .select('*')
-    .eq('slug', params.slug)
-    .single();
+  const post = posts.find((p) => p.slug === params.slug && p.is_published);
 
-  if (!post || error) {
+  if (!post) {
     notFound();
   }
 
   return (
     <>
-      {/* Hero */}
+
       <section style={{ position: 'relative', height: '420px', overflow: 'hidden' }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -43,8 +39,8 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
             <div style={{ marginTop: '1rem', display: 'flex', gap: '1.5rem', color: 'var(--ash-400)', fontSize: '0.8125rem' }}>
               <span>By {post.author}</span>
               <span>
-                {post.published_at 
-                  ? new Date(post.published_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) 
+                {post.published_at
+                  ? new Date(post.published_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
                   : new Date(post.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
               </span>
             </div>
@@ -52,7 +48,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
         </div>
       </section>
 
-      {/* Content */}
+
       <section className="section">
         <div className="container">
           <div style={{ maxWidth: '760px', margin: '0 auto' }}>
@@ -63,7 +59,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
               />
             </AnimatedSection>
 
-            {/* CTA */}
+
             <AnimatedSection style={{ marginTop: '3rem', padding: '2rem', borderRadius: '12px', background: 'var(--surface)', border: '1px solid var(--border-gold)', textAlign: 'center' }}>
               <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.25rem', color: 'white', marginBottom: '0.75rem' }}>
                 Need help from our team?
@@ -81,6 +77,5 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
 }
 
 export async function generateStaticParams() {
-  const { data: posts } = await supabase.from('blogs').select('slug');
-  return (posts || []).map((p: any) => ({ slug: p.slug }));
+  return posts.filter((p) => p.is_published).map((p) => ({ slug: p.slug }));
 }

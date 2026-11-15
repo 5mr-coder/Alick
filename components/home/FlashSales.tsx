@@ -4,29 +4,28 @@ import { useState, useEffect } from 'react';
 import AnimatedSection from '@/components/ui/AnimatedSection';
 import ProductCard from '@/components/products/ProductCard';
 import Button from '@/components/ui/Button';
-import { Product } from '@/types';
-import { supabase } from '@/lib/supabase';
+import { Product, getFlashSaleProducts } from '@/types';
 
-function useCountdown(target: Date | null) {
-  const [timeLeft, setTimeLeft] = useState({ h: 0, m: 0, s: 0, expired: false });
+
+function useCountdown(endDate: Date) {
+  const [timeLeft, setTimeLeft] = useState({ h: 0, m: 0, s: 0 });
 
   useEffect(() => {
-    if (!target) return;
     const tick = () => {
-      const diff = target.getTime() - Date.now();
+      const diff = endDate.getTime() - Date.now();
       if (diff <= 0) {
-        setTimeLeft({ h: 0, m: 0, s: 0, expired: true });
+        setTimeLeft({ h: 0, m: 0, s: 0 });
         return;
       }
       const h = Math.floor(diff / 3600000);
       const m = Math.floor((diff % 3600000) / 60000);
       const s = Math.floor((diff % 60000) / 1000);
-      setTimeLeft({ h, m, s, expired: false });
+      setTimeLeft({ h, m, s });
     };
     tick();
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
-  }, [target]);
+  }, [endDate]);
 
   return timeLeft;
 }
@@ -58,30 +57,18 @@ const Segment = ({ value, label }: { value: number; label: string }) => (
 );
 
 export default function FlashSales() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [endDate, setEndDate] = useState<Date | null>(null);
-  const [loading, setLoading] = useState(true);
+  const products = getFlashSaleProducts();
+  const [endDate] = useState<Date>(() => new Date('2026-12-31T23:59:59.000Z'));
 
-  useEffect(() => {
-    async function fetchData() {
-      const [{ data: settingsData }, { data: productsData }] = await Promise.all([
-        supabase.from("settings").select("*").eq("key", "flash_sale_end").maybeSingle(),
-        supabase.from("products").select("*").eq("is_flash_sale", true).eq("is_published", true).order("name"),
-      ]);
+  if (products.length === 0) {
+    return null;
+  }
 
-      if (settingsData?.value) {
-        setEndDate(new Date(settingsData.value));
-      }
-      setProducts(productsData || []);
-      setLoading(false);
-    }
-    fetchData();
-  }, []);
+  const { h, m, s } = useCountdown(endDate);
+  const expired = endDate.getTime() - Date.now() <= 0;
 
-  const { h, m, s, expired } = useCountdown(endDate);
-
-  if (loading || products.length === 0 || expired || !endDate) {
-    return null; // Hide the section entirely if there are no active flash sales
+  if (expired) {
+    return null;
   }
 
   return (
@@ -94,7 +81,7 @@ export default function FlashSales() {
       }}
     >
       <div className="container">
-        {/* Header */}
+
         <AnimatedSection
           style={{
             display: 'flex',
@@ -115,7 +102,7 @@ export default function FlashSales() {
             </h2>
           </div>
 
-          {/* Countdown */}
+
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <Segment value={h} label="Hrs" />
             <span style={{ color: 'var(--gold-400)', fontWeight: 700, fontSize: '1.2rem', marginBottom: '1.2rem' }}>:</span>
@@ -125,7 +112,7 @@ export default function FlashSales() {
           </div>
         </AnimatedSection>
 
-        {/* Grid */}
+
         <div
           style={{
             display: 'grid',

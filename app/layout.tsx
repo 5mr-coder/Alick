@@ -47,7 +47,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Footer />
           <CartSidebar />
 
-        {/* WhatsApp Floating Button */}
+
         <a
           href="https://wa.me/2348030841357"
           target="_blank"

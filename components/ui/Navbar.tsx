@@ -64,7 +64,7 @@ export default function Navbar() {
             height: '72px',
           }}
         >
-          {/* Logo */}
+
           <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', textDecoration: 'none' }}>
             <div
               style={{
@@ -113,7 +113,7 @@ export default function Navbar() {
             </div>
           </Link>
 
-          {/* Desktop nav links */}
+
           <ul
             style={{
               display: 'flex',
@@ -129,7 +129,7 @@ export default function Navbar() {
             {navLinks.map((link) => {
               const isActiveRoute = pathname === link.href || (link.href !== '/' && pathname.startsWith(link.href));
               const isHovered = hoveredPath === link.href || (hoveredPath === pathname && isActiveRoute);
-              
+
               return (
                 <li key={link.href} style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                   <Link
@@ -149,8 +149,8 @@ export default function Navbar() {
                     }}
                   >
                     {link.label}
-                    
-                    {/* Underline expanding from middle */}
+
+
                     <div
                       style={{
                         position: 'absolute',
@@ -170,9 +170,9 @@ export default function Navbar() {
             })}
           </ul>
 
-          {/* Right side: Cart + CTA */}
+
           <div className="desktop-nav" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            {/* Cart button */}
+
             <button
               onClick={() => setIsCartOpen(true)}
               style={{
@@ -233,7 +233,7 @@ export default function Navbar() {
             </Link>
           </div>
 
-          {/* Mobile: Cart + Hamburger */}
+
           <div style={{ display: 'none', alignItems: 'center', gap: '0.5rem' }} className="mobile-nav-actions">
             <button
               onClick={() => setIsCartOpen(true)}
@@ -294,7 +294,7 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Mobile Drawer */}
+
         {menuOpen && (
           <div
             style={{

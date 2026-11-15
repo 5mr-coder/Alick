@@ -61,7 +61,7 @@ const steps = [
 export default function ServicesPage() {
   return (
     <>
-      {/* Header */}
+
       <section
         style={{
           position: 'relative',
@@ -95,7 +95,7 @@ export default function ServicesPage() {
         </div>
       </section>
 
-      {/* Services grid */}
+
       <section className="section">
         <div className="container">
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
@@ -147,7 +147,7 @@ export default function ServicesPage() {
         </div>
       </section>
 
-      {/* How it works */}
+
       <section className="section" style={{ background: 'var(--ash-900)', borderTop: '1px solid var(--border)' }}>
         <div className="container">
           <AnimatedSection style={{ textAlign: 'center', marginBottom: '3rem' }}>

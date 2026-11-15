@@ -19,7 +19,7 @@ export default function BlogPreview() {
         .eq('is_featured', true)
         .order('published_at', { ascending: false })
         .limit(3);
-        
+
       setPosts(data || []);
       setLoading(false);
     }
@@ -75,7 +75,7 @@ export default function BlogPreview() {
                   className="card"
                   style={{ cursor: 'pointer', height: '100%', display: 'flex', flexDirection: 'column' }}
                 >
-                  {/* Cover image */}
+
                   <div style={{ aspectRatio: '16/9', overflow: 'hidden', background: 'var(--ash-800)' }}>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
@@ -90,8 +90,8 @@ export default function BlogPreview() {
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
                       <span className="badge badge-gold">{post.category}</span>
                       <span style={{ fontSize: '0.75rem', color: 'var(--ash-500)' }}>
-                        {post.published_at 
-                          ? new Date(post.published_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) 
+                        {post.published_at
+                          ? new Date(post.published_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
                           : new Date(post.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </span>
                     </div>

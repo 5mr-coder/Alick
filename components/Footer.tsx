@@ -36,7 +36,7 @@ export default function Footer() {
             marginBottom: '3rem',
           }}
         >
-          {/* Brand */}
+
           <div style={{ gridColumn: 'span 2' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
               <div
@@ -76,7 +76,7 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Links */}
+
           {Object.entries(footerLinks).map(([group, links]) => (
             <div key={group}>
               <h4
@@ -113,7 +113,7 @@ export default function Footer() {
             </div>
           ))}
 
-          {/* WhatsApp CTA */}
+
           <div>
             <h4
               style={{
@@ -161,7 +161,7 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Bottom bar */}
+
         <div
           style={{
             borderTop: '1px solid var(--border)',

@@ -28,7 +28,6 @@ const Button: React.FC<ButtonProps> = ({
   className = '',
   ...props
 }) => {
-  // Map variants to complementary colors
   const variantClasses = {
     primary: "bg-[#d4a017] text-black border-transparent hover:bg-[#f5c842] [--ic-background:#d4a017] [--ic-foreground:#000]",
     secondary: "bg-[#26292f] text-white border-[rgba(255,255,255,0.1)] hover:bg-[#363a42] [--ic-background:#26292f] [--ic-foreground:#fff]",
@@ -75,7 +74,6 @@ const Button: React.FC<ButtonProps> = ({
   );
 
   if (href) {
-    // If it's an external link
     if (href.startsWith('http') || href.startsWith('mailto') || href.startsWith('tel')) {
       return (
         <a href={href} className="inline-block" style={{ textDecoration: 'none' }}>
@@ -83,8 +81,7 @@ const Button: React.FC<ButtonProps> = ({
         </a>
       );
     }
-    
-    // Internal link
+
     return (
       <Link href={href} className="inline-block" style={{ textDecoration: 'none' }}>
         {buttonElement}

@@ -12,7 +12,6 @@ export default function ContactPage() {
     e.preventDefault();
     setStatus('loading');
     try {
-      // Replace with: await submitContactMessage(form);
       await new Promise((r) => setTimeout(r, 1200));
       setStatus('success');
       setForm({ name: '', email: '', phone: '', subject: '', message: '' });
@@ -44,7 +43,7 @@ export default function ContactPage() {
 
   return (
     <>
-      {/* Header */}
+
       <section style={{ padding: '5rem 0 3rem', background: 'var(--ash-900)', borderBottom: '1px solid var(--border)' }}>
         <div className="container">
           <AnimatedSection style={{ maxWidth: '560px' }}>
@@ -61,7 +60,7 @@ export default function ContactPage() {
         <div className="container">
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: '3rem', alignItems: 'start' }}>
 
-            {/* Info column */}
+
             <AnimatedSection direction="right">
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                 {[
@@ -129,7 +128,7 @@ export default function ContactPage() {
                   Message us on WhatsApp
                 </a>
 
-                {/* Google Maps Embed */}
+
                 <div style={{ borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border)' }}>
                   <iframe
                     src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3963.3523025!2d3.3372!3d6.6018!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x103b923b5e54df01%3A0x5b3e96b9b29f8f6b!2s5%20Obafemi%20Awolowo%20Way%2C%20Ikeja%2C%20Lagos!5e0!3m2!1sen!2sng!4v1699999999999!5m2!1sen!2sng"
@@ -145,7 +144,7 @@ export default function ContactPage() {
               </div>
             </AnimatedSection>
 
-            {/* Form column */}
+
             <AnimatedSection direction="left">
               <div className="card" style={{ padding: '2rem' }}>
                 <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.25rem', fontWeight: 700, color: 'white', marginBottom: '1.5rem' }}>

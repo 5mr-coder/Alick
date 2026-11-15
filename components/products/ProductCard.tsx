@@ -14,7 +14,7 @@ export default function ProductCard({ product }: ProductCardProps) {
   return (
     <Link href={`/products/${product.slug}`} style={{ textDecoration: 'none' }}>
       <article className="card" style={{ cursor: 'pointer' }}>
-        {/* Image */}
+
         <div style={{ position: 'relative', aspectRatio: '4/3', overflow: 'hidden', background: 'var(--ash-800)' }}>
           {product.images?.[0] ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -37,7 +37,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             </div>
           )}
 
-          {/* Badges */}
+
           <div style={{ position: 'absolute', top: '0.75rem', left: '0.75rem', display: 'flex', gap: '0.375rem', flexWrap: 'wrap' }}>
             {product.is_flash_sale && <span className="badge badge-sale">Flash Sale</span>}
             {product.is_featured && !product.is_flash_sale && <span className="badge badge-gold">Featured</span>}
@@ -61,7 +61,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           </div>
         </div>
 
-        {/* Info */}
+
         <div style={{ padding: '1rem' }}>
           {product.brand && (
             <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--gold-400)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.25rem' }}>
@@ -86,7 +86,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             {product.name}
           </h3>
 
-          {/* Specs preview */}
+
           {product.specs && (
             <div style={{ display: 'flex', gap: '0.375rem', flexWrap: 'wrap', marginBottom: '0.875rem' }}>
               {Object.entries(product.specs)
@@ -109,7 +109,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             </div>
           )}
 
-          {/* Price */}
+
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <span
               style={{

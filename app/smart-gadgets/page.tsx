@@ -1,38 +1,23 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import AnimatedSection from '@/components/ui/AnimatedSection';
 import ProductCard from '@/components/products/ProductCard';
-import { Product } from '@/types';
-import { supabase } from '@/lib/supabase';
+import { getProductsByCategory } from '@/types';
+import { useCart } from '@/context/CartContext';
+import ShopModePicker from '@/components/shop/ShopModePicker';
 
 const sortOptions = ['Newest', 'Price: Low to High', 'Price: High to Low', 'Featured'];
 
 export default function SmartGadgetsPage() {
-  const [gadgets, setGadgets] = useState<Product[]>([]);
-  const [brands, setBrands] = useState<string[]>(['All']);
+  const { salesMode, setSalesMode, isLoaded } = useCart();
+  const gadgets = getProductsByCategory('smart-gadgets');
   const [activeBrand, setActiveBrand] = useState('All');
   const [sortBy, setSortBy]           = useState('Newest');
   const [showFlash, setShowFlash]     = useState(false);
-  const [loading, setLoading]         = useState(true);
 
-  useEffect(() => {
-    async function fetchProducts() {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('products')
-        .select('*, categories!inner(slug)')
-        .eq('categories.slug', 'smart-gadgets');
-        
-      if (data && !error) {
-        setGadgets(data);
-        const uniqueBrands = Array.from(new Set(data.map(p => p.brand).filter(Boolean)));
-        setBrands(['All', ...uniqueBrands]);
-      }
-      setLoading(false);
-    }
-    fetchProducts();
-  }, []);
+  const brands = ['All', ...Array.from(new Set(gadgets.map(p => p.brand).filter(Boolean)))];
+  const safeBrands = brands.filter((b): b is string => typeof b === 'string');
 
   const filtered = gadgets
     .filter((p) => (activeBrand === 'All' ? true : p.brand === activeBrand))
@@ -44,17 +29,15 @@ export default function SmartGadgetsPage() {
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     });
 
-  if (loading) {
-    return (
-      <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <p style={{ color: 'var(--ash-400)' }}>Loading inventory...</p>
-      </div>
-    );
-  }
+  if (!isLoaded) return null;
+  if (!salesMode) return <ShopModePicker mode={salesMode} onChange={setSalesMode} />;
 
   return (
     <>
-      {/* Page header */}
+      <div className="container" style={{ paddingTop: '1.5rem' }}>
+        <ShopModePicker mode={salesMode} onChange={setSalesMode} compact />
+      </div>
+
       <section
         style={{
           position: 'relative',
@@ -93,17 +76,16 @@ export default function SmartGadgetsPage() {
         </div>
       </section>
 
-      {/* Catalog */}
+
       <section className="section">
         <div className="container">
-          {/* Filters */}
+
           <AnimatedSection style={{ marginBottom: '2rem' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
-              {/* Brand + sort row */}
               <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
                   <span style={{ fontSize: '0.75rem', color: 'var(--ash-500)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', marginRight: '0.25rem' }}>Brand:</span>
-                  {brands.map((brand) => (
+                  {safeBrands.map((brand) => (
                     <button
                       key={brand}
                       onClick={() => setActiveBrand(brand)}
@@ -146,14 +128,14 @@ export default function SmartGadgetsPage() {
             </div>
           </AnimatedSection>
 
-          {/* Results count */}
+
           <AnimatedSection style={{ marginBottom: '1.25rem' }}>
             <p style={{ fontSize: '0.8125rem', color: 'var(--ash-500)' }}>
               Showing {filtered.length} gadget{filtered.length !== 1 ? 's' : ''}
             </p>
           </AnimatedSection>
 
-          {/* Grid */}
+
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '1.25rem' }}>
             {filtered.map((product, i) => (
               <AnimatedSection key={product.id} delay={i * 55}>

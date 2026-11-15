@@ -4,12 +4,12 @@ import { useEffect, useRef } from 'react';
 import Button from '@/components/ui/Button';
 
 const heroImages = [
-  'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=800&q=80', // laptop open
-  'https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?w=800&q=80', // macbook
-  'https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=800&q=80', // laptop dark
-  'https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=800&q=80', // laptop lifestyle
-  'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=800&q=80', // laptop keyboard
-  'https://images.unsplash.com/photo-1629131726692-1accd0c53ce0?w=800&q=80', // laptop desk
+  'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=800&q=80',
+  'https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?w=800&q=80',
+  'https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=800&q=80',
+  'https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=800&q=80',
+  'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=800&q=80',
+  'https://images.unsplash.com/photo-1629131726692-1accd0c53ce0?w=800&q=80',
 ];
 
 const ArrowRight = () => (
@@ -26,11 +26,9 @@ export default function HeroParallax() {
     const handleScroll = () => {
       const scrollY = window.scrollY;
       if (bgRef.current) {
-        // Background moves slower → parallax
         bgRef.current.style.transform = `translateY(${scrollY * 0.45}px)`;
       }
       if (textRef.current) {
-        // Text moves up slightly faster
         textRef.current.style.transform = `translateY(${scrollY * 0.18}px)`;
         textRef.current.style.opacity   = String(Math.max(0, 1 - scrollY / 600));
       }
@@ -50,7 +48,7 @@ export default function HeroParallax() {
         alignItems: 'center',
       }}
     >
-      {/* ── Parallax background grid ── */}
+
       <div
         ref={bgRef}
         style={{
@@ -89,7 +87,7 @@ export default function HeroParallax() {
         ))}
       </div>
 
-      {/* ── Gradient overlays ── */}
+
       <div
         style={{
           position: 'absolute',
@@ -98,7 +96,7 @@ export default function HeroParallax() {
             'linear-gradient(135deg, rgba(14,15,17,0.96) 0%, rgba(14,15,17,0.7) 50%, rgba(14,15,17,0.4) 100%)',
         }}
       />
-      {/* Bottom fade */}
+
       <div
         style={{
           position: 'absolute',
@@ -109,7 +107,7 @@ export default function HeroParallax() {
           background: 'linear-gradient(to top, var(--ash-950), transparent)',
         }}
       />
-      {/* Gold accent glow */}
+
       <div
         style={{
           position: 'absolute',
@@ -123,7 +121,7 @@ export default function HeroParallax() {
         }}
       />
 
-      {/* ── Hero content ── */}
+
       <div
         className="container"
         style={{ position: 'relative', zIndex: 10 }}
@@ -163,7 +161,7 @@ export default function HeroParallax() {
               animation: 'fadeUp 0.7s ease 0.4s both',
             }}
           >
-            Laptops, desktops, smart gadgets, and expert repairs — all under one roof at Ikeja, Lagos. 
+            Laptops, desktops, smart gadgets, and expert repairs — all under one roof at Ikeja, Lagos.
             Quality guaranteed, prices you&apos;ll love.
           </p>
 
@@ -183,7 +181,7 @@ export default function HeroParallax() {
             </Button>
           </div>
 
-          {/* Trust badges */}
+
           <div
             style={{
               marginTop: '3rem',
@@ -219,7 +217,7 @@ export default function HeroParallax() {
         </div>
       </div>
 
-      {/* ── Scroll indicator ── */}
+
       <div
         style={{
           position: 'absolute',

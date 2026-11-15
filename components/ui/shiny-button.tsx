@@ -46,7 +46,7 @@ export function ShinyButton({ children, onClick, className = "" }: ShinyButtonPr
           --duration: 3s;
           --shadow-size: 2px;
           --transition: 800ms cubic-bezier(0.25, 1, 0.5, 1);
-          
+
           isolation: isolate;
           position: relative;
           overflow: hidden;

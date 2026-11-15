@@ -31,10 +31,10 @@ export default function BlogPage() {
     activeCategory === 'All' ? true : p.category === activeCategory
   );
 
-  
+
   return (
     <>
-      {/* Header */}
+
       <section style={{ padding: '5rem 0 3rem', background: 'var(--ash-900)', borderBottom: '1px solid var(--border)' }}>
         <div className="container">
           <AnimatedSection style={{ maxWidth: '600px' }}>
@@ -56,7 +56,7 @@ export default function BlogPage() {
             </div>
           ) : (
             <>
-          {/* Category filter */}
+
           <AnimatedSection style={{ marginBottom: '2rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
             {ALL_CATEGORIES.map((cat) => (
               <button
@@ -75,7 +75,7 @@ export default function BlogPage() {
             ))}
           </AnimatedSection>
 
-          {/* Posts grid */}
+
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
             {filtered.map((post, i) => (
               <AnimatedSection key={post.id} delay={i * 70}>

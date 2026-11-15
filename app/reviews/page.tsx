@@ -1,7 +1,6 @@
-﻿'use client';
+'use client';
 
-import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
+import { useState } from 'react';
 import AnimatedSection from '@/components/ui/AnimatedSection';
 
 type Review = {
@@ -12,25 +11,36 @@ type Review = {
   created_at: string;
 };
 
-export default function ReviewsPage() {
-  const [reviews, setReviews] = useState<Review[]>([]);
-  const [loading, setLoading] = useState(true);
+const reviews: Review[] = [
+  {
+    id: 'review-1',
+    image_url: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=400&q=80',
+    reviewer_name: 'Chioma Okonkwo',
+    text: 'I bought a laptop from Alick System Services and it arrived in perfect condition. The team was very helpful and patient with all my questions.',
+    created_at: '2026-01-12T00:00:00.000Z',
+  },
+  {
+    id: 'review-2',
+    image_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80',
+    reviewer_name: 'Emeka Nwosu',
+    text: 'My laptop battery was dying fast. They replaced it quickly, at a fair price, and now my machine lasts all day again. Highly recommend.',
+    created_at: '2026-01-18T00:00:00.000Z',
+  },
+  {
+    id: 'review-3',
+    image_url: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400&q=80',
+    reviewer_name: 'Yetunde Adesanya',
+    text: 'I came in with a cracked screen and left with a laptop that looks and feels brand new. Online reviews don\'t lie — they really do great work.',
+    created_at: '2026-01-25T00:00:00.000Z',
+  },
+];
 
-  useEffect(() => {
-    async function fetchReviews() {
-      const { data } = await supabase
-        .from('reviews')
-        .select('*')
-        .order('created_at', { ascending: false });
-      setReviews(data || []);
-      setLoading(false);
-    }
-    fetchReviews();
-  }, []);
+export default function ReviewsPage() {
+  const [selectedReviews, setSelectedReviews] = useState<Review[]>(reviews);
 
   return (
     <>
-      {/* Hero */}
+
       <section
         style={{
           padding: '5rem 0 3.5rem',
@@ -41,7 +51,7 @@ export default function ReviewsPage() {
         <div className="container">
           <AnimatedSection style={{ maxWidth: '600px' }}>
             <div className="section-label">
-                                        <span style={{ background: 'var(--gold-400)', width: '2rem', height: '1px', display: 'inline-block' }} />
+              <span style={{ background: 'var(--gold-400)', width: '2rem', height: '1px', display: 'inline-block' }} />
               Happy Customers
             </div>
             <h1 className="section-heading">Customer Reviews</h1>
@@ -52,14 +62,10 @@ export default function ReviewsPage() {
         </div>
       </section>
 
-      {/* Reviews Grid */}
+
       <section className="section">
         <div className="container">
-          {loading ? (
-            <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--ash-500)' }}>
-              Loading reviews...
-            </div>
-          ) : reviews.length === 0 ? (
+          {selectedReviews.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--ash-500)' }}>
               No reviews yet. Check back soon!
             </div>
@@ -71,7 +77,7 @@ export default function ReviewsPage() {
                 gap: '1.5rem',
               }}
             >
-              {reviews.map((review, i) => (
+              {selectedReviews.map((review, i) => (
                 <AnimatedSection key={review.id} delay={i * 60}>
                   <div
                     className="card"
@@ -85,7 +91,7 @@ export default function ReviewsPage() {
                       height: '100%',
                     }}
                   >
-                    {/* Review Image */}
+
                     <div style={{ overflow: 'hidden', borderRadius: '14px 14px 0 0' }}>
                       <img
                         src={review.image_url}
@@ -103,9 +109,9 @@ export default function ReviewsPage() {
                       />
                     </div>
 
-                    {/* Review Text */}
+
                     <div style={{ padding: '1.25rem 1.5rem 1.5rem', flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                      {/* Stars */}
+
                       <div style={{ display: 'flex', gap: '2px' }}>
                         {[1,2,3,4,5].map(s => (
                           <svg key={s} width="14" height="14" viewBox="0 0 24 24" fill="var(--gold-400)">

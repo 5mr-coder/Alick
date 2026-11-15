@@ -9,18 +9,24 @@ export interface CartItem {
   quantity: number;
   stock: number;
   image: string;
+  salesMode: SalesMode;
 }
+
+export type SalesMode = 'consumer' | 'retail';
 
 interface CartContextType {
   items: CartItem[];
   addToCart: (item: CartItem) => void;
-  removeFromCart: (id: string) => void;
-  updateQuantity: (id: string, quantity: number) => void;
+  removeFromCart: (id: string, mode: SalesMode) => void;
+  updateQuantity: (id: string, mode: SalesMode, quantity: number) => void;
+  switchItemToRetail: (id: string) => void;
   clearCart: () => void;
   cartTotal: number;
   isCartOpen: boolean;
   setIsCartOpen: (isOpen: boolean) => void;
   isLoaded: boolean;
+  salesMode: SalesMode | null;
+  setSalesMode: (mode: SalesMode) => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -29,60 +35,96 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [salesMode, setSalesMode] = useState<SalesMode | null>(null);
 
-  // Load from local storage
   useEffect(() => {
     const saved = localStorage.getItem('alick-cart') || localStorage.getItem('allick-cart');
     if (saved) {
       try {
-        setItems(JSON.parse(saved));
+        const parsed = JSON.parse(saved) as Array<Omit<CartItem, 'salesMode'> & { salesMode?: SalesMode }>;
+        setItems(parsed.map((item) => {
+          const mode = item.salesMode ?? 'consumer';
+          const maximum = mode === 'consumer' ? Math.min(item.stock, 9) : item.stock;
+          const quantity = mode === 'retail'
+            ? maximum >= 10 ? Math.min(maximum, Math.max(10, item.quantity)) : 0
+            : Math.min(maximum, item.quantity);
+          return { ...item, salesMode: mode, quantity };
+        }).filter((item) => item.quantity > 0));
       } catch (e) {
-        console.error("Failed to parse cart", e);
+        console.error('Could not load the saved cart', e);
       }
     }
+    const savedMode = localStorage.getItem('alick-sales-mode');
+    if (savedMode === 'consumer' || savedMode === 'retail') setSalesMode(savedMode);
     setIsLoaded(true);
   }, []);
 
-  // Save to local storage
   useEffect(() => {
     if (isLoaded) {
       localStorage.setItem('alick-cart', JSON.stringify(items));
       localStorage.removeItem('allick-cart');
+      if (salesMode) localStorage.setItem('alick-sales-mode', salesMode);
     }
-  }, [items, isLoaded]);
+  }, [items, isLoaded, salesMode]);
 
   const addToCart = (newItem: CartItem) => {
     setItems((currentItems) => {
-      const existingItem = currentItems.find((item) => item.id === newItem.id);
+      const existingItem = currentItems.find((item) => item.id === newItem.id && item.salesMode === newItem.salesMode);
+      const minimum = newItem.salesMode === 'retail' ? 10 : 1;
+      const maximum = newItem.salesMode === 'consumer' ? Math.min(newItem.stock, 9) : newItem.stock;
+      if (maximum < minimum) return currentItems;
       if (existingItem) {
         return currentItems.map((item) =>
-          item.id === newItem.id 
-            ? { ...item, quantity: Math.min(item.stock, item.quantity + newItem.quantity) } 
+          item.id === newItem.id && item.salesMode === newItem.salesMode
+            ? { ...item, quantity: Math.min(maximum, Math.max(minimum, item.quantity + newItem.quantity)) }
             : item
         );
       }
-      return [...currentItems, { ...newItem, quantity: Math.min(newItem.stock, newItem.quantity) }];
+      return [...currentItems, { ...newItem, quantity: Math.min(maximum, Math.max(minimum, newItem.quantity)) }];
     });
-    setIsCartOpen(true); // Auto open cart on add
+    setIsCartOpen(true);
   };
 
-  const removeFromCart = (id: string) => {
-    setItems((current) => current.filter((item) => item.id !== id));
+  const removeFromCart = (id: string, mode: SalesMode) => {
+    setItems((current) => current.filter((item) => item.id !== id || item.salesMode !== mode));
   };
 
-  const updateQuantity = (id: string, quantity: number) => {
+  const updateQuantity = (id: string, mode: SalesMode, quantity: number) => {
     if (quantity <= 0) {
-      removeFromCart(id);
+      if (mode === 'consumer') removeFromCart(id, mode);
       return;
     }
     setItems((current) =>
       current.map((item) => {
-        if (item.id === id) {
-          return { ...item, quantity: Math.min(item.stock, quantity) };
+        if (item.id === id && item.salesMode === mode) {
+          const minimum = mode === 'retail' ? 10 : 1;
+          const maximum = mode === 'consumer' ? Math.min(item.stock, 9) : item.stock;
+          if (maximum < minimum) return item;
+          return { ...item, quantity: Math.min(maximum, Math.max(minimum, quantity)) };
         }
         return item;
       })
     );
+  };
+
+  const switchItemToRetail = (id: string) => {
+    setItems((current) => {
+      const consumerItem = current.find((item) => item.id === id && item.salesMode === 'consumer');
+      if (!consumerItem || consumerItem.stock < 10) return current;
+
+      const retailItem = current.find((item) => item.id === id && item.salesMode === 'retail');
+      if (retailItem) {
+        const quantity = Math.min(retailItem.stock, Math.max(10, retailItem.quantity + consumerItem.quantity));
+        return current
+          .filter((item) => item !== consumerItem && item !== retailItem)
+          .concat({ ...retailItem, quantity });
+      }
+
+      return current.map((item) => item === consumerItem
+        ? { ...item, salesMode: 'retail', quantity: Math.max(10, item.quantity) }
+        : item);
+    });
+    setSalesMode('retail');
   };
 
   const clearCart = () => setItems([]);
@@ -96,11 +138,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
         addToCart,
         removeFromCart,
         updateQuantity,
+        switchItemToRetail,
         clearCart,
         cartTotal,
         isCartOpen,
         setIsCartOpen,
         isLoaded,
+        salesMode,
+        setSalesMode,
       }}
     >
       {children}

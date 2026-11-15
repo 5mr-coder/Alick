@@ -7,6 +7,85 @@ export interface Category {
   created_at: string;
 }
 
+export const products: Product[] = [
+  {
+    id: 'hp-elitebook-840-g9',
+    category_id: 'laptops',
+    name: 'HP EliteBook 840 G9',
+    slug: 'hp-elitebook-840-g9',
+    description: 'Business powerhouse with a stunning display, strong security features, and all-day battery life.',
+    price: 680000,
+    old_price: 750000,
+    stock: 5,
+    brand: 'HP',
+    model: 'EliteBook 840 G9',
+    specs: { RAM: '16GB', Storage: '512GB SSD', Processor: 'Intel i7' },
+    images: ['https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=600&q=80'],
+    is_featured: true,
+    is_flash_sale: false,
+    is_published: true,
+    created_at: '2026-01-01T00:00:00.000Z',
+    updated_at: '2026-01-01T00:00:00.000Z',
+  },
+  {
+    id: 'dell-xps-15-oled',
+    category_id: 'laptops',
+    name: 'Dell XPS 15 OLED',
+    slug: 'dell-xps-15-oled',
+    description: 'The creator\'s ultimate laptop with a gorgeous OLED panel, powerful performance, and premium build.',
+    price: 1250000,
+    old_price: 1400000,
+    stock: 3,
+    brand: 'Dell',
+    model: 'XPS 15 9530',
+    specs: { RAM: '32GB', Storage: '1TB SSD', Processor: 'Intel i9' },
+    images: ['https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=600&q=80'],
+    is_featured: true,
+    is_flash_sale: true,
+    is_published: true,
+    created_at: '2026-01-01T00:00:00.000Z',
+    updated_at: '2026-01-01T00:00:00.000Z',
+  },
+  {
+    id: 'lenovo-thinkpad-x1-carbon',
+    category_id: 'laptops',
+    name: 'Lenovo ThinkPad X1 Carbon',
+    slug: 'lenovo-thinkpad-x1-carbon',
+    description: 'Ultra-light, ultra-durable business laptop that travels as hard as you do.',
+    price: 890000,
+    old_price: 980000,
+    stock: 7,
+    brand: 'Lenovo',
+    model: 'ThinkPad X1 Carbon Gen 11',
+    specs: { RAM: '16GB', Storage: '512GB SSD', Processor: 'Intel i7' },
+    images: ['https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?w=600&q=80'],
+    is_featured: true,
+    is_flash_sale: false,
+    is_published: true,
+    created_at: '2026-01-01T00:00:00.000Z',
+    updated_at: '2026-01-01T00:00:00.000Z',
+  },
+  {
+    id: 'macbook-air-m3',
+    category_id: 'laptops',
+    name: 'MacBook Air M3',
+    slug: 'macbook-air-m3',
+    description: 'Apple silicon at its finest — silent, fast, and incredibly efficient.',
+    price: 1550000,
+    old_price: 0,
+    stock: 4,
+    brand: 'Apple',
+    model: 'MacBook Air 15" M3',
+    specs: { RAM: '16GB', Storage: '512GB SSD', Processor: 'Apple M3' },
+    images: ['https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=600&q=80'],
+    is_featured: true,
+    is_flash_sale: false,
+    is_published: true,
+    created_at: '2026-01-01T00:00:00.000Z',
+    updated_at: '2026-01-01T00:00:00.000Z',
+  },
+];
+
 export interface Product {
   id: string;
   category_id?: string;
@@ -29,6 +108,33 @@ export interface Product {
   category?: Category;
   tags?: Tag[];
 }
+
+export type ProductsData = Product[];
+
+export function getProductsByCategory(slug: string): Product[] {
+  return products.filter((p) => p.category_id === slug && p.is_published);
+}
+
+export function getProductBySlug(slug: string): Product | undefined {
+  return products.find((p) => p.slug === slug && p.is_published);
+}
+
+export function getFeaturedProducts(): Product[] {
+  return products.filter((p) => p.is_featured && p.is_published);
+}
+
+export function getFlashSaleProducts(): Product[] {
+  return products.filter((p) => p.is_flash_sale && p.is_published);
+}
+
+export function getFlashSaleProductsStatic(): Product[] {
+  return flashSaleProductsStatic;
+}
+
+export const flashSaleProducts = products.filter((p) => p.is_flash_sale && p.is_published);
+
+export { postsStatic as posts };
+
 
 export interface Tag {
   id: string;
@@ -64,6 +170,76 @@ export interface BlogPost {
   created_at: string;
   updated_at: string;
 }
+
+const flashSaleProductsStatic: Product[] = [
+  {
+    id: 'dell-xps-15-oled',
+    category_id: 'laptops',
+    name: 'Dell XPS 15 OLED',
+    slug: 'dell-xps-15-oled',
+    description: 'The creator\'s ultimate laptop with a gorgeous OLED panel, powerful performance, and premium build.',
+    price: 1250000,
+    old_price: 1400000,
+    stock: 3,
+    brand: 'Dell',
+    model: 'XPS 15 9530',
+    specs: { RAM: '32GB', Storage: '1TB SSD', Processor: 'Intel i9' },
+    images: ['https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=600&q=80'],
+    is_featured: true,
+    is_flash_sale: true,
+    is_published: true,
+    created_at: '2026-01-01T00:00:00.000Z',
+    updated_at: '2026-01-01T00:00:00.000Z',
+  },
+];
+
+const postsStatic: BlogPost[] = [
+  {
+    id: 'post-1',
+    title: 'How to choose the right laptop in Lagos',
+    slug: 'how-to-choose-laptop-lagos',
+    excerpt: 'A practical buying guide for students, professionals, and small business owners shopping for a laptop in Nigeria.',
+    cover_image: 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=600&q=80',
+    author: 'Alick System Services',
+    category: 'Buying Guide',
+    tags: ['laptops', 'buying guide'],
+    is_published: true,
+    is_featured: true,
+    published_at: '2026-01-10T00:00:00.000Z',
+    created_at: '2026-01-10T00:00:00.000Z',
+    updated_at: '2026-01-10T00:00:00.000Z',
+  },
+  {
+    id: 'post-2',
+    title: 'MacBook Air M3 vs Windows ultrabooks',
+    slug: 'macbook-air-m3-vs-windows-ultrabooks',
+    excerpt: 'An honest comparison of battery life, performance, and value before you spend big on a new ultrabook.',
+    cover_image: 'https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=600&q=80',
+    author: 'Alick System Services',
+    category: 'Buying Guide',
+    tags: ['macbook', 'comparison'],
+    is_published: true,
+    is_featured: false,
+    published_at: '2026-01-15T00:00:00.000Z',
+    created_at: '2026-01-15T00:00:00.000Z',
+    updated_at: '2026-01-15T00:00:00.000Z',
+  },
+  {
+    id: 'post-3',
+    title: 'Keep your laptop cool in Nigerian heat',
+    slug: 'keep-laptop-cool-nigerian-heat',
+    excerpt: 'Simple tips to stop overheating, extend battery life, and avoid costly repairs in a hot climate.',
+    cover_image: 'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=600&q=80',
+    author: 'Alick System Services',
+    category: 'Tech Tips',
+    tags: ['cooling', 'maintenance'],
+    is_published: true,
+    is_featured: false,
+    published_at: '2026-01-20T00:00:00.000Z',
+    created_at: '2026-01-20T00:00:00.000Z',
+    updated_at: '2026-01-20T00:00:00.000Z',
+  },
+];
 
 export interface FlashSale {
   id: string;

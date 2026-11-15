@@ -5,10 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 export default function SiteIntro() {
   const [show, setShow] = useState(true);
-  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    setIsClient(true);
     document.body.style.overflow = 'hidden';
 
     const timer = setTimeout(() => {
@@ -21,8 +19,6 @@ export default function SiteIntro() {
       document.body.style.overflow = '';
     };
   }, []);
-
-  if (!isClient) return null;
 
   return (
     <AnimatePresence>
@@ -41,7 +37,7 @@ export default function SiteIntro() {
             alignItems: 'center',
             justifyContent: 'center',
             overflow: 'hidden',
-            pointerEvents: 'none',
+            pointerEvents: 'auto',
           }}
         >
           <motion.div

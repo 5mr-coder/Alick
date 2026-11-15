@@ -35,7 +35,6 @@ export default function AnimatedSection({
     const el = ref.current;
     if (!el) return;
 
-    // Set initial hidden state
     el.style.opacity = '0';
     el.style.transform = getInitialTransform();
     el.style.transition = `opacity 0.75s ease ${delay}ms, transform 0.75s cubic-bezier(0.22,1,0.36,1) ${delay}ms`;

@@ -13,7 +13,7 @@ export default function CheckoutPage() {
   const { items, cartTotal, clearCart, isLoaded } = useCart();
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -33,7 +33,7 @@ export default function CheckoutPage() {
         <h2 style={{ fontSize: '1.5rem', fontWeight: 600, marginBottom: '0.5rem', color: 'white' }}>Your cart is empty</h2>
         <p style={{ color: 'var(--ash-400)', marginBottom: '2rem' }}>Add some products to your cart to proceed to checkout.</p>
         <Link href="/products" style={{
-          display: 'inline-block', padding: '0.75rem 1.5rem', background: 'var(--gold-400)', 
+          display: 'inline-block', padding: '0.75rem 1.5rem', background: 'var(--gold-400)',
           color: 'black', fontWeight: 600, borderRadius: '8px', textDecoration: 'none'
         }}>
           Continue Shopping
@@ -42,61 +42,16 @@ export default function CheckoutPage() {
     );
   }
 
-  const handlePlaceOrder = async (e: React.FormEvent) => {
+  const placeOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    
-    try {
-      // Create order
-      const { data: orderData, error: orderError } = await supabase
-        .from('orders')
-        .insert([{
-          guest_name: formData.name,
-          guest_email: formData.email,
-          guest_phone: formData.phone,
-          delivery_address: formData.address,
-          total: cartTotal,
-          subtotal: cartTotal,
-          note: formData.notes,
-          status: 'pending',
-          payment_status: 'unpaid'
-        }])
-        .select()
-        .single();
-        
-      if (orderError) {
-        console.error("Order insertion error:", orderError);
-        throw orderError;
-      }
-      
-      // Create order items
-      const orderItems = items.map(item => ({
-        order_id: orderData.id,
-        product_id: item.id,
-        product_name: item.name,
-        product_image: item.image,
-        quantity: item.quantity,
-        unit_price: item.price
-      }));
-      
-      const { error: itemsError } = await supabase
-        .from('order_items')
-        .insert(orderItems);
-        
-      if (itemsError) throw itemsError;
 
-      // Deduct stock for each ordered item
-      for (const item of items) {
-        await supabase.rpc('decrement_stock', {
-          product_id: item.id,
-          qty: item.quantity,
-        });
-      }
-      
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 1200));
+
       clearCart();
       setSuccess(true);
       window.scrollTo(0, 0);
-      
     } catch (err: any) {
       console.error(err);
       alert('Failed to place order. Please try again.');
@@ -105,7 +60,7 @@ export default function CheckoutPage() {
     }
   };
 
-  const handleWhatsAppOrder = () => {
+  const sendOrderOnWhatsApp = () => {
     const message = `*New Order Inquiry*%0A%0A*Name:* ${formData.name || 'Not provided'}%0A*Total:* ₦${cartTotal.toLocaleString()}%0A%0A*Items:*%0A${items.map(i => `- ${i.quantity}x ${i.name} (₦${i.price.toLocaleString()})`).join('%0A')}`;
     window.open(`https://wa.me/2348030841357?text=${message}`, '_blank');
   };
@@ -140,79 +95,79 @@ export default function CheckoutPage() {
         <Link href="/products" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', color: 'var(--ash-400)', textDecoration: 'none', fontSize: '0.875rem', marginBottom: '2rem' }}>
           <ArrowLeft size={16} /> Back to Shopping
         </Link>
-        
+
         <h1 style={{ fontSize: '2rem', fontWeight: 700, color: 'white', marginBottom: '2rem', fontFamily: 'var(--font-display)' }}>Checkout</h1>
-        
+
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: '2rem', alignItems: 'start' }} className="checkout-grid">
-          {/* Left Column: Form */}
+
           <div style={{ background: 'var(--surface)', borderRadius: '16px', border: '1px solid var(--border)', padding: '2rem' }}>
             <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: 'white', marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border)' }}>
               Shipping Details
             </h2>
-            
-            <form id="checkout-form" onSubmit={handlePlaceOrder} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+
+            <form id="checkout-form" onSubmit={placeOrder} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               <div>
                 <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--ash-300)', marginBottom: '0.5rem' }}>Full Name *</label>
-                <input 
+                <input
                   required
-                  type="text" 
+                  type="text"
                   value={formData.name}
                   onChange={e => setFormData({...formData, name: e.target.value})}
-                  style={{ width: '100%', padding: '0.75rem 1rem', background: 'var(--ash-900)', border: '1px solid var(--border)', borderRadius: '8px', color: 'white', outline: 'none' }} 
+                  style={{ width: '100%', padding: '0.75rem 1rem', background: 'var(--ash-900)', border: '1px solid var(--border)', borderRadius: '8px', color: 'white', outline: 'none' }}
                 />
               </div>
-              
+
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--ash-300)', marginBottom: '0.5rem' }}>Email Address *</label>
-                  <input 
+                  <input
                     required
-                    type="email" 
+                    type="email"
                     value={formData.email}
                     onChange={e => setFormData({...formData, email: e.target.value})}
-                    style={{ width: '100%', padding: '0.75rem 1rem', background: 'var(--ash-900)', border: '1px solid var(--border)', borderRadius: '8px', color: 'white', outline: 'none' }} 
+                    style={{ width: '100%', padding: '0.75rem 1rem', background: 'var(--ash-900)', border: '1px solid var(--border)', borderRadius: '8px', color: 'white', outline: 'none' }}
                   />
                 </div>
                 <div>
                   <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--ash-300)', marginBottom: '0.5rem' }}>Phone Number *</label>
-                  <input 
+                  <input
                     required
-                    type="tel" 
+                    type="tel"
                     value={formData.phone}
                     onChange={e => setFormData({...formData, phone: e.target.value})}
-                    style={{ width: '100%', padding: '0.75rem 1rem', background: 'var(--ash-900)', border: '1px solid var(--border)', borderRadius: '8px', color: 'white', outline: 'none' }} 
+                    style={{ width: '100%', padding: '0.75rem 1rem', background: 'var(--ash-900)', border: '1px solid var(--border)', borderRadius: '8px', color: 'white', outline: 'none' }}
                   />
                 </div>
               </div>
-              
+
               <div>
                 <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--ash-300)', marginBottom: '0.5rem' }}>Delivery Address *</label>
-                <textarea 
+                <textarea
                   required
                   rows={3}
                   value={formData.address}
                   onChange={e => setFormData({...formData, address: e.target.value})}
-                  style={{ width: '100%', padding: '0.75rem 1rem', background: 'var(--ash-900)', border: '1px solid var(--border)', borderRadius: '8px', color: 'white', outline: 'none', resize: 'vertical' }} 
+                  style={{ width: '100%', padding: '0.75rem 1rem', background: 'var(--ash-900)', border: '1px solid var(--border)', borderRadius: '8px', color: 'white', outline: 'none', resize: 'vertical' }}
                 />
               </div>
-              
+
               <div>
                 <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: 'var(--ash-300)', marginBottom: '0.5rem' }}>Order Notes (Optional)</label>
-                <textarea 
+                <textarea
                   rows={2}
                   value={formData.notes}
                   onChange={e => setFormData({...formData, notes: e.target.value})}
-                  style={{ width: '100%', padding: '0.75rem 1rem', background: 'var(--ash-900)', border: '1px solid var(--border)', borderRadius: '8px', color: 'white', outline: 'none', resize: 'vertical' }} 
+                  style={{ width: '100%', padding: '0.75rem 1rem', background: 'var(--ash-900)', border: '1px solid var(--border)', borderRadius: '8px', color: 'white', outline: 'none', resize: 'vertical' }}
                 />
               </div>
             </form>
           </div>
-          
-          {/* Right Column: Order Summary */}
+
+
           <div>
             <div style={{ background: 'var(--surface)', borderRadius: '16px', border: '1px solid var(--border)', padding: '1.5rem', marginBottom: '1.5rem' }}>
               <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'white', marginBottom: '1rem' }}>Order Summary</h3>
-              
+
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.5rem', maxHeight: '300px', overflowY: 'auto', paddingRight: '0.5rem' }}>
                 {items.map(item => (
                   <div key={item.id} style={{ display: 'flex', gap: '1rem' }}>
@@ -229,7 +184,7 @@ export default function CheckoutPage() {
                   </div>
                 ))}
               </div>
-              
+
               <div style={{ borderTop: '1px dashed rgba(255,255,255,0.1)', paddingTop: '1rem', marginBottom: '1.5rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                   <span style={{ color: 'var(--ash-300)' }}>Subtotal</span>
@@ -244,8 +199,8 @@ export default function CheckoutPage() {
                   <span style={{ color: 'var(--gold-400)', fontWeight: 700, fontSize: '1.25rem' }}>₦{cartTotal.toLocaleString()}</span>
                 </div>
               </div>
-              
-              {/* Payment Notice */}
+
+
               <div style={{ background: 'rgba(245, 200, 66, 0.1)', border: '1px solid var(--border-gold)', borderRadius: '8px', padding: '1rem', marginBottom: '1.5rem', display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
                 <ShieldAlert size={18} color="var(--gold-400)" style={{ marginTop: '0.1rem', flexShrink: 0 }} />
                 <p style={{ color: 'var(--ash-200)', fontSize: '0.8125rem', lineHeight: 1.5 }}>
@@ -253,31 +208,31 @@ export default function CheckoutPage() {
                   Paystack integration is currently down. Please submit your order and we will confirm it via WhatsApp/Phone for payment on delivery or bank transfer.
                 </p>
               </div>
-              
-              <button 
+
+              <button
                 form="checkout-form"
                 type="submit"
                 disabled={loading}
-                style={{ 
-                  width: '100%', padding: '0.875rem', background: 'var(--gold-400)', color: 'black', 
+                style={{
+                  width: '100%', padding: '0.875rem', background: 'var(--gold-400)', color: 'black',
                   fontWeight: 600, fontSize: '1rem', borderRadius: '8px', border: 'none', cursor: loading ? 'not-allowed' : 'pointer',
                   opacity: loading ? 0.7 : 1, transition: 'opacity 200ms ease', marginBottom: '1rem'
                 }}
               >
                 {loading ? 'Processing...' : 'Place Order'}
               </button>
-              
+
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', margin: '1rem 0' }}>
                 <div style={{ flex: 1, height: '1px', background: 'var(--border)' }}></div>
                 <span style={{ color: 'var(--ash-500)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>OR</span>
                 <div style={{ flex: 1, height: '1px', background: 'var(--border)' }}></div>
               </div>
-              
-              <button 
+
+              <button
                 type="button"
-                onClick={handleWhatsAppOrder}
-                style={{ 
-                  width: '100%', padding: '0.875rem', background: '#25D366', color: 'white', 
+                onClick={sendOrderOnWhatsApp}
+                style={{
+                  width: '100%', padding: '0.875rem', background: '#25D366', color: 'white',
                   fontWeight: 600, fontSize: '1rem', borderRadius: '8px', border: 'none', cursor: 'pointer',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', transition: 'background 200ms ease'
                 }}
@@ -291,7 +246,7 @@ export default function CheckoutPage() {
           </div>
         </div>
       </div>
-      
+
       <style dangerouslySetInnerHTML={{__html: `
         @media (max-width: 900px) {
           .checkout-grid {

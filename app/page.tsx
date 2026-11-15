@@ -14,7 +14,6 @@ export default function HomePage() {
       <FeaturedProducts />
       <FlashSales />
 
-      {/* Category Quick Links */}
       <section className="section" style={{ background: 'var(--ash-900)', borderTop: '1px solid var(--border)', borderBottom: '1px solid var(--border)' }}>
         <div className="container">
           <AnimatedSection style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
@@ -106,7 +105,6 @@ export default function HomePage() {
       <ServicesPreview />
       <BlogPreview />
 
-      {/* CTA Banner */}
       <section
         className="section"
         style={{
