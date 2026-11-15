@@ -1,35 +1,18 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import AnimatedSection from '@/components/ui/AnimatedSection';
-import { supabase } from '@/lib/supabase';
-import { BlogPost } from '@/types';
+import { posts } from '@/types';
 
 const ALL_CATEGORIES = ['All', 'Buying Guide', 'Tech Tips', 'News', 'Announcements'];
 
 export default function BlogPage() {
-  const [posts, setPosts] = useState<BlogPost[]>([]);
-  const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState('All');
 
-  useEffect(() => {
-    async function fetchPosts() {
-      setLoading(true);
-      const { data } = await supabase
-        .from('blogs')
-        .select('*')
-        .eq('is_published', true)
-        .order('published_at', { ascending: false });
-      setPosts(data || []);
-      setLoading(false);
-    }
-    fetchPosts();
-  }, []);
-
-  const filtered = posts.filter((p) =>
-    activeCategory === 'All' ? true : p.category === activeCategory
-  );
+  const filtered = posts
+    .filter((post) => post.is_published && (activeCategory === 'All' || post.category === activeCategory))
+    .sort((a, b) => new Date(b.published_at || b.created_at).getTime() - new Date(a.published_at || a.created_at).getTime());
 
 
   return (
@@ -50,12 +33,7 @@ export default function BlogPage() {
       <section className="section">
         <div className="container">
 
-          {loading ? (
-            <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--ash-500)' }}>
-              Loading posts...
-            </div>
-          ) : (
-            <>
+          <>
 
           <AnimatedSection style={{ marginBottom: '2rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
             {ALL_CATEGORIES.map((cat) => (
@@ -121,13 +99,12 @@ export default function BlogPage() {
             ))}
           </div>
 
-          {filtered.length === 0 && !loading && (
+          {filtered.length === 0 && (
             <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--ash-500)' }}>
               No posts in this category yet. Check back soon!
             </div>
           )}
           </>
-          )}
         </div>
       </section>
     </>

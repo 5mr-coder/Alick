@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
-import { supabase } from '@/lib/supabase';
 import AnimatedSection from '@/components/ui/AnimatedSection';
 import { ShoppingBag, ArrowLeft, ShieldAlert } from 'lucide-react';
 import Link from 'next/link';
