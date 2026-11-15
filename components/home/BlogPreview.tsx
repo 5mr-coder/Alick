@@ -1,33 +1,16 @@
-"use client";
-import { useState, useEffect } from 'react';
 import AnimatedSection from '@/components/ui/AnimatedSection';
 import Button from '@/components/ui/Button';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabase';
-import { BlogPost } from '@/types';
+import { posts } from '@/types';
 
 export default function BlogPreview() {
-  const [posts, setPosts] = useState<BlogPost[]>([]);
-  const [loading, setLoading] = useState(true);
+  const featuredPosts = posts
+    .filter((post) => post.is_published && post.is_featured)
+    .sort((a, b) => new Date(b.published_at || b.created_at).getTime() - new Date(a.published_at || a.created_at).getTime())
+    .slice(0, 3);
 
-  useEffect(() => {
-    async function fetchPosts() {
-      const { data } = await supabase
-        .from('blogs')
-        .select('*')
-        .eq('is_published', true)
-        .eq('is_featured', true)
-        .order('published_at', { ascending: false })
-        .limit(3);
-
-      setPosts(data || []);
-      setLoading(false);
-    }
-    fetchPosts();
-  }, []);
-
-  if (loading || posts.length === 0) {
-    return null; // Hide section if no featured posts
+  if (featuredPosts.length === 0) {
+    return null;
   }
 
   return (
@@ -68,7 +51,7 @@ export default function BlogPreview() {
             gap: '1.25rem',
           }}
         >
-          {posts.map((post, i) => (
+          {featuredPosts.map((post, i) => (
             <AnimatedSection key={post.id} delay={i * 90}>
               <Link href={`/blog/${post.slug}`} style={{ textDecoration: 'none' }}>
                 <article
