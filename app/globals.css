@@ -1,40 +1,21 @@
+@import url('https://api.fontshare.com/v2/css?f%5B%5D=zodiak@400,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Gabriela&family=Playwrite+USA+Modern&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 240 5.9% 10%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 240 10% 3.9%;
-    --radius: 0.5rem;
-  }
- 
-  .dark {
+    /* ── shadcn-compatible shell tokens (mapped to site colours in tailwind.config.js) ── */
     --background: 240 10% 3.9%;
     --foreground: 0 0% 98%;
     --card: 240 10% 3.9%;
     --card-foreground: 0 0% 98%;
     --popover: 240 10% 3.9%;
     --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
+    --primary: 43 90% 61%;
+    --primary-foreground: 240 10% 4%;
     --secondary: 240 3.7% 15.9%;
     --secondary-foreground: 0 0% 98%;
     --muted: 240 3.7% 15.9%;
@@ -43,31 +24,46 @@
     --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
+    --radius: 0.5rem;
+  }
+
+  /* ── Header-scoped theme tokens (only on the header element) ── */
+  .header {
+    --header-background: hsl(240 8% 98%);
+    --header-foreground: hsl(240 10% 6%);
+    --header-border: hsl(240 6% 86%);
+    --header-muted: hsl(240 5% 38%);
+    --header-ring: hsl(43 74% 38%);
+    --header-ring-offset: hsl(240 8% 98%);
+  }
+
+  .dark .header {
+    --header-background: hsl(240 10% 10%);
+    --header-foreground: hsl(220 30% 96%);
+    --header-border: hsl(240 8% 22%);
+    --header-muted: hsl(220 12% 74%);
+    --header-ring: hsl(43 89% 60%);
+    --header-ring-offset: hsl(240 10% 10%);
   }
 }
- 
+
 @layer base {
   * {
     @apply border-border;
   }
 }
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap');
-
 :root {
-  /* ── Color Tokens ── */
-  /* ── Dark blue base ── */
+  /* ── Color Tokens (dark — the site default) ── */
   --ash-950: #070b14;
   --ash-900: #0d1424;
   --ash-800: #131c31;
   --ash-700: #1a2642;
   --ash-600: #273759;
-  --ash-500: #3a4d76;
-  --ash-400: #7c93bd;
-  --ash-300: #a9bddb;
+  --ash-500: #7d90b5;
+  --ash-400: #9db0d2;
+  --ash-300: #c2d1e8;
   --ash-200: #d2e0f3;
   --ash-100: #eef4ff;
 
@@ -76,25 +72,35 @@
   --gold-500: #d4a017;
   --gold-600: #b8860b;
   --gold-glow: rgba(245, 200, 66, 0.25);
+  --on-gold: #0f0f0f;
 
+  /* ── Text on themed surfaces ── */
+  --heading: #ffffff;
   --white: #ffffff;
 
-  /* ── Surfaces on blue ── */
+  /* ── Surfaces ── */
   --surface: #0f1729;
   --surface-2: #162034;
 
-  /* ── Borders ── */
-  --border: rgba(124, 147, 189, 0.12);
+  /* ── Borders / focus ── */
+  --border: rgba(157, 176, 210, 0.18);
   --border-gold: rgba(245, 200, 66, 0.35);
+  --ring: rgba(245, 200, 66, 0.75);
+  --danger: #f87171;
 
-  /* ── Pop accent: electric cyan ── */
-  --cyan-400: #22d3ee;
-  --cyan-500: #0ea5e9;
-  --cyan-glow: rgba(34, 211, 238, 0.25);
+  /* ── Pop accents ── */
+  --cyan-400: #5eead4;
+  --cyan-500: #22d3ee;
+  --cyan-glow: rgba(94, 234, 212, 0.25);
+  --on-cyan: #06302b;
 
   /* ── Typography ── */
-  --font-display: var(--font-ibm-plex-serif), 'Syne', sans-serif;
-  --font-body: var(--font-ibm-plex-serif), 'Inter', sans-serif;
+  --font-display: var(--font-zodiak), var(--font-gabriela), var(--font-ibm-plex-serif), Georgia, serif;
+  --font-body: var(--font-lora), var(--font-ibm-plex-serif), Georgia, serif;
+  --font-accent: var(--font-playwrite), var(--font-gabriela), cursive;
+  --font-zodiak: 'Zodiak', Georgia, serif;
+  --font-gabriela: 'Gabriela', Georgia, serif;
+  --font-playwrite: 'Playwrite USA Modern', cursive;
 
   /* ── Spacing ── */
   --section-py: 6rem;
@@ -105,6 +111,64 @@
   --transition-fast: 150ms ease;
   --transition-base: 250ms ease;
   --transition-slow: 400ms ease;
+}
+
+/* ── Light theme: token remap (no component redesign) ── */
+html:not(.dark) {
+  --ash-950: #f6f8fc;
+  --ash-900: #eef2f8;
+  --ash-800: #e3e9f2;
+  --ash-700: #d3dceb;
+  --ash-600: #b8c5da;
+  --ash-500: #5a6a86;
+  --ash-400: #47566f;
+  --ash-300: #33415c;
+  --ash-200: #1f2b42;
+  --ash-100: #101827;
+
+  --gold-400: #7a5200;
+  --gold-500: #92620a;
+  --gold-600: #a8740f;
+  --gold-glow: rgba(122, 82, 0, 0.2);
+  --on-gold: #ffffff;
+
+  --heading: #0b1220;
+
+  --surface: #ffffff;
+  --surface-2: #f1f5fa;
+
+  --border: rgba(15, 23, 41, 0.16);
+  --border-gold: rgba(146, 98, 10, 0.45);
+  --ring: rgba(15, 23, 41, 0.55);
+  --danger: #b91c1c;
+
+  --cyan-400: #0f766e;
+  --cyan-500: #0b5c73;
+  --cyan-glow: rgba(15, 118, 110, 0.22);
+  --on-cyan: #ffffff;
+}
+
+/* ── Regions that stay dark in both themes (hero, intro, image overlays) ── */
+html .force-dark {
+  --ash-950: #070b14;
+  --ash-900: #0d1424;
+  --ash-800: #131c31;
+  --ash-700: #1a2642;
+  --ash-600: #273759;
+  --ash-500: #8fa3c6;
+  --ash-400: #b3c3dd;
+  --ash-300: #cdd9ec;
+  --ash-200: #d2e0f3;
+  --ash-100: #eef4ff;
+  --heading: #f8fafc;
+  --surface: #0f1729;
+  --surface-2: #162034;
+  --border: rgba(157, 176, 210, 0.18);
+  --gold-400: #f5c842;
+  --on-gold: #0f0f0f;
+  --cyan-400: #5eead4;
+  --cyan-500: #22d3ee;
+  --on-cyan: #06302b;
 }
 
 *, *::before, *::after {
@@ -125,6 +189,7 @@ body {
   font-size: 1rem;
   line-height: 1.6;
   overflow-x: hidden;
+  transition: background-color 250ms ease, color 250ms ease;
 }
 
 /* ── Scrollbar ── */
@@ -184,7 +249,17 @@ body {
   font-size: clamp(2rem, 4vw, 3rem);
   font-weight: 700;
   line-height: 1.15;
-  color: var(--white);
+  color: var(--heading);
+}
+
+/* ── Brand tagline (Playwrite accent) ── */
+.brand-tagline {
+  font-family: var(--font-accent);
+  font-size: 0.72rem;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+  color: var(--gold-400);
+  display: block;
 }
 
 /* ── Divider ── */
@@ -267,14 +342,14 @@ body {
 }
 
 .badge-gold {
-  background: rgba(245, 200, 66, 0.12);
+  background: rgba(212, 160, 23, 0.18);
   color: var(--gold-400);
   border: 1px solid var(--border-gold);
 }
 
 .badge-sale {
-  background: rgba(34, 211, 238, 0.12);
-  color: var(--cyan-400);
+  background: rgba(34, 211, 238, 0.14);
+  color: var(--cyan-500);
   border: 1px solid var(--cyan-glow);
 }
 
@@ -315,9 +390,24 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
   .reveal {
     opacity: 1;
     transform: none;
     transition: none;
+  }
+
+  .skeleton,
+  .animate-fade-up {
+    animation: none;
+  }
+
+  *, *::before, *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
   }
 }

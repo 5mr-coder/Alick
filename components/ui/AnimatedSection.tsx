@@ -35,23 +35,54 @@ export default function AnimatedSection({
     const el = ref.current;
     if (!el) return;
 
+    const reveal = () => {
+      el.style.opacity = '1';
+      el.style.transform = 'none';
+    };
+
+    const reduceMotion =
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const supportsObserver = typeof IntersectionObserver !== 'undefined';
+
+    // Content must never stay hidden: if we cannot animate, or the element is
+    // already on screen, show it immediately.
+    const rect = el.getBoundingClientRect();
+    const alreadyInView = rect.top < window.innerHeight && rect.bottom > 0;
+
+    if (reduceMotion || !supportsObserver || alreadyInView) {
+      reveal();
+      return;
+    }
+
     el.style.opacity = '0';
     el.style.transform = getInitialTransform();
     el.style.transition = `opacity 0.75s ease ${delay}ms, transform 0.75s cubic-bezier(0.22,1,0.36,1) ${delay}ms`;
 
+    let revealed = false;
+    const finish = () => {
+      if (revealed) return;
+      revealed = true;
+      reveal();
+      observer.disconnect();
+      window.clearTimeout(failsafe);
+    };
+
     const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          el.style.opacity = '1';
-          el.style.transform = 'none';
-          observer.unobserve(el);
-        }
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) finish();
       },
-      { threshold }
+      { threshold, rootMargin: '0px 0px -5% 0px' }
     );
 
+    // Safety net: never leave a block hidden if the observer never reports.
+    const failsafe = window.setTimeout(finish, 2000);
+
     observer.observe(el);
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      window.clearTimeout(failsafe);
+    };
   }, [delay, direction, threshold]);
 
   return (

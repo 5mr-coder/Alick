@@ -45,7 +45,7 @@ export default function Footer() {
                   width: '40px',
                   height: '40px',
                   borderRadius: '8px',
-                  background: 'white',
+                  background: '#ffffff',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -55,7 +55,7 @@ export default function Footer() {
                 <img src="/logo.png" alt="Alick System Services" style={{ width: '36px', objectFit: 'contain' }} />
               </div>
               <div>
-                <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, color: 'white', lineHeight: 1 }}>Alick</div>
+                <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, color: 'var(--heading)', lineHeight: 1 }}>Alick</div>
                 <div style={{ fontSize: '0.65rem', color: 'var(--gold-400)', letterSpacing: '0.12em', textTransform: 'uppercase' }}>System Services</div>
               </div>
             </div>
@@ -102,7 +102,7 @@ export default function Footer() {
                         textDecoration: 'none',
                         transition: 'color 200ms ease',
                       }}
-                      onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = 'white')}
+                      onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = 'var(--heading)')}
                       onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = 'var(--ash-400)')}
                     >
                       {link.label}
@@ -138,7 +138,7 @@ export default function Footer() {
                 padding: '0.625rem 1.125rem',
                 borderRadius: '8px',
                 background: 'var(--cyan-400)',
-                color: '#0b1a23',
+                color: 'var(--on-cyan)',
                 fontSize: '0.875rem',
                 fontWeight: 600,
                 textDecoration: 'none',
@@ -184,4 +184,3 @@ export default function Footer() {
     </footer>
   );
 }
-

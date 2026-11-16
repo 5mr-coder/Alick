@@ -78,7 +78,7 @@ export default function BlogPage() {
                           {post.published_at ? new Date(post.published_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}
                         </span>
                       </div>
-                      <h3 style={{ fontFamily: 'var(--font-body)', fontSize: '0.9375rem', fontWeight: 700, color: 'white', lineHeight: 1.45, marginBottom: '0.625rem', flex: 1 }}>
+                      <h3 style={{ fontFamily: 'var(--font-body)', fontSize: '0.9375rem', fontWeight: 700, color: 'var(--heading)', lineHeight: 1.45, marginBottom: '0.625rem', flex: 1 }}>
                         {post.title}
                       </h3>
                       <p style={{ fontSize: '0.8125rem', color: 'var(--ash-400)', lineHeight: 1.65, marginBottom: '1rem',

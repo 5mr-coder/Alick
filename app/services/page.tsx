@@ -63,6 +63,7 @@ export default function ServicesPage() {
     <>
 
       <section
+        className="force-dark"
         style={{
           position: 'relative',
           padding: '5rem 0 4rem',
@@ -82,13 +83,15 @@ export default function ServicesPage() {
         <div className="container" style={{ position: 'relative', zIndex: 1 }}>
           <AnimatedSection style={{ maxWidth: '640px' }}>
             <div className="section-label">What we offer</div>
-            <h1 className="section-heading">Professional Repair Services</h1>
+            <h1 className="section-heading" style={{ color: '#F8FAFC' }}>Professional Repair Services</h1>
             <p style={{ color: 'var(--ash-400)', marginTop: '1rem', fontSize: '1rem', lineHeight: 1.7 }}>
               Expert laptop repairs and upgrades by certified technicians at our Ikeja workshop. Fast turnaround, quality guaranteed.
             </p>
             <div style={{ marginTop: '2rem', display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
               <Button href="https://wa.me/2348030841357" size="lg">Book a Repair</Button>
-              <Button href="/contact" variant="outline" size="lg">Call Us</Button>
+              <Button href="/contact" variant="outline" size="lg" style={{ color: '#F8FAFC', borderColor: '#F8FAFC' }}>
+                Call Us
+              </Button>
             </div>
           </AnimatedSection>
         </div>
@@ -118,7 +121,7 @@ export default function ServicesPage() {
                   }}>
                     {service.icon}
                   </div>
-                  <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.25rem', fontWeight: 700, color: 'white', marginBottom: '0.75rem' }}>
+                  <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.25rem', fontWeight: 700, color: 'var(--heading)', marginBottom: '0.75rem' }}>
                     {service.title}
                   </h2>
                   <p style={{ fontSize: '0.875rem', color: 'var(--ash-400)', lineHeight: 1.7, marginBottom: '1.5rem', flex: 1 }}>
@@ -167,7 +170,7 @@ export default function ServicesPage() {
                 >
                   {step.step}
                 </div>
-                <h3 style={{ fontSize: '1rem', fontWeight: 700, color: 'white', marginBottom: '0.5rem' }}>{step.title}</h3>
+                <h3 style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--heading)', marginBottom: '0.5rem' }}>{step.title}</h3>
                 <p style={{ fontSize: '0.875rem', color: 'var(--ash-400)', lineHeight: 1.6 }}>{step.desc}</p>
               </AnimatedSection>
             ))}

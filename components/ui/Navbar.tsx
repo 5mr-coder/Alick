@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
 import { ShoppingCart } from 'lucide-react';
+import { SunMoonThemeToggle } from './sun-moon-theme-toggle';
 
 const navLinks = [
   { label: 'Home',          href: '/' },
@@ -30,9 +31,32 @@ export default function Navbar() {
     setHoveredPath(pathname);
   }, [pathname]);
 
+  const cartBadge = (
+    <span
+      style={{
+        position: 'absolute',
+        top: '-6px',
+        right: '-6px',
+        background: 'var(--gold-400)',
+        color: 'var(--on-gold)',
+        borderRadius: '50%',
+        width: '18px',
+        height: '18px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: '0.65rem',
+        fontWeight: 700,
+      }}
+    >
+      {cartCount}
+    </span>
+  );
+
   return (
     <>
       <nav
+        className="header"
         style={{
           position: 'fixed',
           top: 0,
@@ -40,9 +64,9 @@ export default function Navbar() {
           right: 0,
           zIndex: 50,
           transition: 'all 300ms ease',
-          background: '#1E2028',
+          background: 'var(--header-background)',
           backdropFilter: 'blur(16px)',
-          borderBottom: '1px solid rgba(212, 175, 55, 0.4)',
+          borderBottom: '1px solid var(--header-border)',
           boxShadow: '0 2px 20px rgba(0,0,0,0.4)',
         }}
       >
@@ -64,7 +88,7 @@ export default function Navbar() {
                 width: '40px',
                 height: '40px',
                 borderRadius: '8px',
-                background: 'white',
+                background: '#ffffff',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -84,24 +108,14 @@ export default function Navbar() {
                   fontFamily: 'var(--font-display)',
                   fontSize: '1.1rem',
                   fontWeight: 700,
-                  color: 'white',
+                  color: 'var(--header-foreground)',
                   lineHeight: 1,
                   display: 'block',
                 }}
               >
                 Alick
               </span>
-              <span
-                style={{
-                  fontSize: '0.65rem',
-                  fontWeight: 500,
-                  color: 'var(--gold-400)',
-                  letterSpacing: '0.12em',
-                  textTransform: 'uppercase',
-                }}
-              >
-                System Services
-              </span>
+              <span className="brand-tagline">System Services</span>
             </div>
           </Link>
 
@@ -133,7 +147,7 @@ export default function Navbar() {
                       fontSize: '0.875rem',
                       fontWeight: isActiveRoute ? 600 : 500,
                       textDecoration: 'none',
-                      color: isActiveRoute ? 'var(--gold-400)' : (isHovered ? 'white' : '#D0D0D0'),
+                      color: isActiveRoute ? 'var(--gold-400)' : (isHovered ? 'var(--header-foreground)' : 'var(--header-muted)'),
                       transition: 'all 250ms ease',
                       letterSpacing: '0.01em',
                       position: 'relative',
@@ -165,11 +179,13 @@ export default function Navbar() {
 
           <div className="desktop-nav" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
 
+            <SunMoonThemeToggle storageKey="adammant-theme" size={40} sky duration={900} />
+
             <button
               onClick={() => setIsCartOpen(true)}
               style={{
                 position: 'relative',
-                                  background: 'rgba(245,200,66,0.1)',
+                background: 'rgba(245,200,66,0.1)',
                 border: '1px solid rgba(245,200,66,0.25)',
                 borderRadius: '8px',
                 padding: '0.5rem',
@@ -183,35 +199,15 @@ export default function Navbar() {
               aria-label="Open cart"
             >
               <ShoppingCart size={20} />
-              {cartCount > 0 && (
-                <span
-                  style={{
-                    position: 'absolute',
-                    top: '-6px',
-                    right: '-6px',
-                    background: 'var(--gold-400)',
-                    color: '#0F0F0F',
-                    borderRadius: '50%',
-                    width: '18px',
-                    height: '18px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '0.65rem',
-                    fontWeight: 700,
-                  }}
-                >
-                  {cartCount}
-                </span>
-              )}
+              {cartCount > 0 && cartBadge}
             </button>
 
-                          <Link
+            <Link
               href="/contact"
               style={{
                 padding: '0.5rem 1.125rem',
                 background: 'var(--gold-400)',
-                color: '#0F0F0F',
+                color: 'var(--on-gold)',
                 borderRadius: '8px',
                 fontSize: '0.875rem',
                 fontWeight: 600,
@@ -227,11 +223,12 @@ export default function Navbar() {
 
 
           <div style={{ display: 'none', alignItems: 'center', gap: '0.5rem' }} className="mobile-nav-actions">
+            <SunMoonThemeToggle storageKey="adammant-theme" size={44} sky duration={900} />
             <button
               onClick={() => setIsCartOpen(true)}
               style={{
                 position: 'relative',
-                                  background: 'rgba(245,200,66,0.1)',
+                background: 'rgba(245,200,66,0.1)',
                 border: '1px solid rgba(245,200,66,0.25)',
                 borderRadius: '8px',
                 padding: '0.5rem',
@@ -239,29 +236,10 @@ export default function Navbar() {
                 color: 'var(--gold-400)',
                 display: 'flex',
               }}
+              aria-label="Open cart"
             >
               <ShoppingCart size={20} />
-              {cartCount > 0 && (
-                <span
-                  style={{
-                    position: 'absolute',
-                    top: '-6px',
-                    right: '-6px',
-                    background: 'var(--gold-400)',
-                    color: '#0F0F0F',
-                    borderRadius: '50%',
-                    width: '18px',
-                    height: '18px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '0.65rem',
-                    fontWeight: 700,
-                  }}
-                >
-                  {cartCount}
-                </span>
-              )}
+              {cartCount > 0 && cartBadge}
             </button>
             <button
               className="mobile-menu-btn"
@@ -271,9 +249,10 @@ export default function Navbar() {
                 border: 'none',
                 cursor: 'pointer',
                 padding: '0.5rem',
-                color: 'white',
+                color: 'var(--header-foreground)',
               }}
               aria-label="Toggle menu"
+              aria-expanded={menuOpen}
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 {menuOpen ? (
@@ -290,8 +269,8 @@ export default function Navbar() {
         {menuOpen && (
           <div
             style={{
-              background: '#1E2028',
-              borderTop: '1px solid rgba(245,200,66,0.35)',
+              background: 'var(--header-background)',
+              borderTop: '1px solid var(--header-border)',
               padding: '1rem 1.5rem 1.5rem',
             }}
           >
@@ -309,7 +288,7 @@ export default function Navbar() {
                         fontSize: '1rem',
                         fontWeight: active ? 600 : 500,
                         textDecoration: 'none',
-                        color: active ? '#0F0F0F' : '#D0D0D0',
+                        color: active ? 'var(--on-gold)' : 'var(--header-muted)',
                         background: active ? 'var(--gold-400)' : 'transparent',
                         borderLeft: active ? 'none' : '2px solid transparent',
                         transition: 'all 200ms ease',
@@ -327,7 +306,7 @@ export default function Navbar() {
                     display: 'block',
                     padding: '0.75rem 1rem',
                     background: 'var(--gold-400)',
-                    color: '#0F0F0F',
+                    color: 'var(--on-gold)',
                     borderRadius: '8px',
                     fontSize: '1rem',
                     fontWeight: 600,

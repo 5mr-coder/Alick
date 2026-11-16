@@ -117,7 +117,7 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
               fontFamily: 'var(--font-display)',
               fontSize: 'clamp(1.75rem, 3.5vw, 2.75rem)',
               fontWeight: 700,
-              color: '#ffffff',
+              color: 'var(--heading)',
               lineHeight: 1.1,
               marginBottom: '1.5rem',
             }}>
@@ -145,7 +145,7 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
             <div style={{ marginBottom: '2.5rem' }}>
               <h3 style={{
                 display: 'flex', alignItems: 'center', gap: '0.5rem',
-                color: '#ffffff', fontWeight: 600, fontSize: '0.95rem',
+                color: 'var(--heading)', fontWeight: 600, fontSize: '0.95rem',
                 marginBottom: '0.75rem', paddingBottom: '0.75rem',
                 borderBottom: '1px solid var(--border)',
               }}>
@@ -155,10 +155,10 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
                 {Object.entries(product.specs || {}).map(([key, val]) => (
                   <div key={key} style={{
                     display: 'flex', justifyContent: 'space-between',
-                    padding: '0.6rem 0', borderBottom: '1px dashed rgba(255,255,255,0.06)',
+                    padding: '0.6rem 0', borderBottom: '1px dashed var(--border)',
                   }}>
                     <dt style={{ color: 'var(--ash-400)', fontSize: '0.875rem' }}>{key}</dt>
-                    <dd style={{ color: '#fff', fontWeight: 500, fontSize: '0.875rem' }}>{val}</dd>
+                    <dd style={{ color: 'var(--heading)', fontWeight: 500, fontSize: '0.875rem' }}>{val}</dd>
                   </div>
                 ))}
               </dl>
@@ -195,9 +195,9 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
                       setQuantity((current) => Math.max(salesMode === 'retail' ? 10 : 1, current - 1));
                     }}
                     aria-label="Decrease quantity"
-                    style={{ padding: '0.4rem 0.75rem', background: 'var(--ash-800)', color: 'white', border: 'none', cursor: 'pointer', fontSize: '1rem' }}
+                    style={{ padding: '0.4rem 0.75rem', background: 'var(--ash-800)', color: 'var(--heading)', border: 'none', cursor: 'pointer', fontSize: '1rem' }}
                   >−</button>
-                  <span style={{ padding: '0.4rem 1rem', color: 'white', fontSize: '0.9rem', minWidth: '2.5rem', textAlign: 'center' }}>{quantity}</span>
+                  <span style={{ padding: '0.4rem 1rem', color: 'var(--heading)', fontSize: '0.9rem', minWidth: '2.5rem', textAlign: 'center' }}>{quantity}</span>
                   <button
                     onClick={() => {
                       if (salesMode === 'consumer' && quantity >= 9) {
@@ -208,7 +208,7 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
                     }}
                     disabled={quantityLimitReached || retailUnavailable}
                     aria-label="Increase quantity"
-                    style={{ padding: '0.4rem 0.75rem', background: 'var(--ash-800)', color: quantityLimitReached || retailUnavailable ? 'var(--ash-600)' : 'white', border: 'none', cursor: quantityLimitReached || retailUnavailable ? 'default' : 'pointer', fontSize: '1rem' }}
+                    style={{ padding: '0.4rem 0.75rem', background: 'var(--ash-800)', color: quantityLimitReached || retailUnavailable ? 'var(--ash-600)' : 'var(--heading)', border: 'none', cursor: quantityLimitReached || retailUnavailable ? 'default' : 'pointer', fontSize: '1rem' }}
                   >+</button>
                 </div>
                 {quantity >= maximumQuantity && !retailUnavailable && !(salesMode === 'consumer' && quantity >= 9) && (
@@ -236,7 +236,7 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
                 href={`https://wa.me/2348030841357?text=${encodeURIComponent(`Hi, I would like to ask about a retail order of at least 10 ${product.name}.` )}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                style={{ display: 'block', width: '100%', padding: '0.875rem', borderRadius: '10px', background: 'var(--gold-400)', color: '#111', textAlign: 'center', textDecoration: 'none', fontWeight: 700 }}
+                style={{ display: 'block', width: '100%', padding: '0.875rem', borderRadius: '10px', background: 'var(--gold-400)', color: 'var(--on-gold)', textAlign: 'center', textDecoration: 'none', fontWeight: 700 }}
               >
                 Ask about bulk availability
               </a>
@@ -254,7 +254,7 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
 
       {showConsumerPrompt && (
         <div role="presentation" onClick={() => setShowConsumerPrompt(false)} style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(0,0,0,0.72)', display: 'grid', placeItems: 'center', padding: '1rem' }}>
-          <div role="dialog" aria-modal="true" aria-labelledby="consumer-prompt-title" onClick={(event) => event.stopPropagation()} style={{ width: '100%', maxWidth: '440px', padding: '2rem', borderRadius: '16px', border: '1px solid var(--border-gold)', background: 'var(--ash-900)', color: 'white' }}>
+          <div role="dialog" aria-modal="true" aria-labelledby="consumer-prompt-title" onClick={(event) => event.stopPropagation()} style={{ width: '100%', maxWidth: '440px', padding: '2rem', borderRadius: '16px', border: '1px solid var(--border-gold)', background: 'var(--ash-900)', color: 'var(--heading)' }}>
             <h2 id="consumer-prompt-title" style={{ fontSize: '1.4rem', marginBottom: '0.75rem' }}>Ordering fewer than 10?</h2>
             <p style={{ color: 'var(--ash-300)', lineHeight: 1.6, marginBottom: '1.5rem' }}>
               Retail mode starts at 10 units. Switch to personal shopping to buy between 1 and 9 units of this product.
@@ -263,11 +263,11 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
               <button
                 type="button"
                 onClick={() => { setSalesMode('consumer'); setQuantity(Math.min(9, product.stock)); setShowConsumerPrompt(false); }}
-                style={{ flex: 1, padding: '0.8rem 1rem', border: 0, borderRadius: '8px', background: 'var(--gold-400)', color: '#111', fontWeight: 700, cursor: 'pointer' }}
+                style={{ flex: 1, padding: '0.8rem 1rem', border: 0, borderRadius: '8px', background: 'var(--gold-400)', color: 'var(--on-gold)', fontWeight: 700, cursor: 'pointer' }}
               >
                 Switch to personal shopping
               </button>
-              <button type="button" onClick={() => setShowConsumerPrompt(false)} style={{ padding: '0.8rem 1rem', border: '1px solid var(--border)', borderRadius: '8px', background: 'transparent', color: 'white', cursor: 'pointer' }}>
+              <button type="button" onClick={() => setShowConsumerPrompt(false)} style={{ padding: '0.8rem 1rem', border: '1px solid var(--border)', borderRadius: '8px', background: 'transparent', color: 'var(--heading)', cursor: 'pointer' }}>
                 Keep retail quantity
               </button>
             </div>
@@ -277,7 +277,7 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
 
       {showRetailPrompt && (
         <div role="presentation" onClick={() => setShowRetailPrompt(false)} style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(0,0,0,0.72)', display: 'grid', placeItems: 'center', padding: '1rem' }}>
-          <div role="dialog" aria-modal="true" aria-labelledby="retail-prompt-title" onClick={(event) => event.stopPropagation()} style={{ width: '100%', maxWidth: '440px', padding: '2rem', borderRadius: '16px', border: '1px solid var(--border-gold)', background: 'var(--ash-900)', color: 'white' }}>
+          <div role="dialog" aria-modal="true" aria-labelledby="retail-prompt-title" onClick={(event) => event.stopPropagation()} style={{ width: '100%', maxWidth: '440px', padding: '2rem', borderRadius: '16px', border: '1px solid var(--border-gold)', background: 'var(--ash-900)', color: 'var(--heading)' }}>
             <h2 id="retail-prompt-title" style={{ fontSize: '1.4rem', marginBottom: '0.75rem' }}>Buying 10 or more?</h2>
             <p style={{ color: 'var(--ash-300)', lineHeight: 1.6, marginBottom: '1.5rem' }}>
               Switch to retail mode to place orders starting at 10 units per product.
@@ -286,11 +286,11 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
               <button
                 type="button"
                 onClick={() => { setSalesMode('retail'); setQuantity(10); setShowRetailPrompt(false); }}
-                style={{ flex: 1, padding: '0.8rem 1rem', border: 0, borderRadius: '8px', background: 'var(--gold-400)', color: '#111', fontWeight: 700, cursor: 'pointer' }}
+                style={{ flex: 1, padding: '0.8rem 1rem', border: 0, borderRadius: '8px', background: 'var(--gold-400)', color: 'var(--on-gold)', fontWeight: 700, cursor: 'pointer' }}
               >
                 Switch to retail mode
               </button>
-              <button type="button" onClick={() => setShowRetailPrompt(false)} style={{ padding: '0.8rem 1rem', border: '1px solid var(--border)', borderRadius: '8px', background: 'transparent', color: 'white', cursor: 'pointer' }}>
+              <button type="button" onClick={() => setShowRetailPrompt(false)} style={{ padding: '0.8rem 1rem', border: '1px solid var(--border)', borderRadius: '8px', background: 'transparent', color: 'var(--heading)', cursor: 'pointer' }}>
                 Keep shopping
               </button>
             </div>
@@ -299,14 +299,14 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
       )}
 
       <div className="container" style={{ marginTop: '4rem', paddingTop: '4rem', borderTop: '1px solid var(--border)' }}>
-        <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '2rem', color: '#fff', marginBottom: '2rem' }}>Customer Reviews</h2>
+        <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '2rem', color: 'var(--heading)', marginBottom: '2rem' }}>Customer Reviews</h2>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4rem' }} className="product-grid">
           <div>
             <p style={{ color: 'var(--ash-400)' }}>No reviews yet. Be the first to review!</p>
           </div>
 
           <div style={{ background: 'var(--ash-900)', padding: '2rem', borderRadius: '12px', border: '1px solid var(--border)' }}>
-            <h3 style={{ color: '#fff', fontSize: '1.25rem', marginBottom: '1.5rem', fontWeight: 600 }}>Write a Review</h3>
+            <h3 style={{ color: 'var(--heading)', fontSize: '1.25rem', marginBottom: '1.5rem', fontWeight: 600 }}>Write a Review</h3>
             <p style={{ color: 'var(--ash-400)', fontSize: '0.9rem', lineHeight: 1.6 }}>
               Reviews are not available yet.
             </p>

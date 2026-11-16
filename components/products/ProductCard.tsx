@@ -73,7 +73,7 @@ export default function ProductCard({ product }: ProductCardProps) {
               fontFamily: 'var(--font-body)',
               fontSize: '0.9375rem',
               fontWeight: 600,
-              color: 'white',
+              color: 'var(--heading)',
               lineHeight: 1.4,
               marginBottom: '0.75rem',
               display: '-webkit-box',

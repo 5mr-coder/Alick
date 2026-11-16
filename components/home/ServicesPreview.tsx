@@ -100,7 +100,7 @@ export default function ServicesPreview() {
                     fontFamily: 'var(--font-body)',
                     fontSize: '1rem',
                     fontWeight: 700,
-                    color: 'white',
+                    color: 'var(--heading)',
                     marginBottom: '0.625rem',
                   }}
                 >

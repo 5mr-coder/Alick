@@ -31,8 +31,8 @@ const Button: React.FC<ButtonProps> = ({
   const variantClasses = {
     primary: "bg-[#d4a017] text-black border-transparent hover:bg-[#f5c842] [--ic-background:#d4a017] [--ic-foreground:#000]",
     secondary: "bg-[#26292f] text-white border-[rgba(255,255,255,0.1)] hover:bg-[#363a42] [--ic-background:#26292f] [--ic-foreground:#fff]",
-    outline: "bg-transparent text-white border-[#D4A017] border hover:bg-[rgba(212,160,23,0.15)] [--ic-background:transparent] [--ic-foreground:#fff]",
-    ghost: "bg-transparent text-[#D4A017] border-transparent hover:text-white hover:bg-[rgba(212,160,23,0.1)] [--ic-background:transparent] [--ic-foreground:#D4A017]"
+    outline: "bg-transparent text-[color:var(--heading)] border-[#D4A017] border hover:bg-[rgba(212,160,23,0.15)] [--ic-background:transparent] [--ic-foreground:#fff]",
+    ghost: "bg-transparent text-[color:var(--gold-400)] border-transparent hover:text-[color:var(--heading)] hover:bg-[rgba(212,160,23,0.1)] [--ic-background:transparent] [--ic-foreground:#D4A017]"
   };
 
   const sizeClasses = {

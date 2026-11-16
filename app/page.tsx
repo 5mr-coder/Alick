@@ -50,6 +50,7 @@ export default function HomePage() {
               <AnimatedSection key={cat.label} delay={i * 70}>
                 <a
                   href={cat.href}
+                  className="force-dark"
                   style={{
                     display: 'block',
                     position: 'relative',

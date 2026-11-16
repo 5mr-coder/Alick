@@ -29,11 +29,11 @@ export default function CheckoutPage() {
     return (
       <div style={{ padding: '8rem 0', textAlign: 'center', minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
         <ShoppingBag size={48} style={{ color: 'var(--ash-500)', marginBottom: '1rem' }} />
-        <h2 style={{ fontSize: '1.5rem', fontWeight: 600, marginBottom: '0.5rem', color: 'white' }}>Your cart is empty</h2>
+        <h2 style={{ fontSize: '1.5rem', fontWeight: 600, marginBottom: '0.5rem', color: 'var(--heading)' }}>Your cart is empty</h2>
         <p style={{ color: 'var(--ash-400)', marginBottom: '2rem' }}>Add some products to your cart to proceed to checkout.</p>
         <Link href="/products" style={{
           display: 'inline-block', padding: '0.75rem 1.5rem', background: 'var(--gold-400)',
-          color: 'black', fontWeight: 600, borderRadius: '8px', textDecoration: 'none'
+          color: 'var(--on-gold)', fontWeight: 600, borderRadius: '8px', textDecoration: 'none'
         }}>
           Continue Shopping
         </Link>
@@ -72,7 +72,7 @@ export default function CheckoutPage() {
             <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </div>
-        <h1 style={{ fontSize: '2.5rem', fontWeight: 700, color: 'white', marginBottom: '1rem', fontFamily: 'var(--font-display)' }}>
+        <h1 style={{ fontSize: '2.5rem', fontWeight: 700, color: 'var(--heading)', marginBottom: '1rem', fontFamily: 'var(--font-display)' }}>
           Order Received!
         </h1>
         <p style={{ color: 'var(--ash-300)', fontSize: '1.1rem', maxWidth: '500px', margin: '0 auto 2rem', lineHeight: 1.6 }}>
@@ -80,7 +80,7 @@ export default function CheckoutPage() {
         </p>
         <Link href="/" style={{
           display: 'inline-block', padding: '0.875rem 2rem', background: 'var(--ash-800)', border: '1px solid var(--border)',
-          color: 'white', fontWeight: 600, borderRadius: '8px', textDecoration: 'none', transition: 'background 200ms ease'
+          color: 'var(--heading)', fontWeight: 600, borderRadius: '8px', textDecoration: 'none', transition: 'background 200ms ease'
         }}>
           Return to Home
         </Link>
@@ -95,12 +95,12 @@ export default function CheckoutPage() {
           <ArrowLeft size={16} /> Back to Shopping
         </Link>
 
-        <h1 style={{ fontSize: '2rem', fontWeight: 700, color: 'white', marginBottom: '2rem', fontFamily: 'var(--font-display)' }}>Checkout</h1>
+        <h1 style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--heading)', marginBottom: '2rem', fontFamily: 'var(--font-display)' }}>Checkout</h1>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: '2rem', alignItems: 'start' }} className="checkout-grid">
 
           <div style={{ background: 'var(--surface)', borderRadius: '16px', border: '1px solid var(--border)', padding: '2rem' }}>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: 'white', marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border)' }}>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--heading)', marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border)' }}>
               Shipping Details
             </h2>
 
@@ -112,7 +112,7 @@ export default function CheckoutPage() {
                   type="text"
                   value={formData.name}
                   onChange={e => setFormData({...formData, name: e.target.value})}
-                  style={{ width: '100%', padding: '0.75rem 1rem', background: 'var(--ash-900)', border: '1px solid var(--border)', borderRadius: '8px', color: 'white', outline: 'none' }}
+                  style={{ width: '100%', padding: '0.75rem 1rem', background: 'var(--ash-900)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--heading)', outline: 'none' }}
                 />
               </div>
 
@@ -124,7 +124,7 @@ export default function CheckoutPage() {
                     type="email"
                     value={formData.email}
                     onChange={e => setFormData({...formData, email: e.target.value})}
-                    style={{ width: '100%', padding: '0.75rem 1rem', background: 'var(--ash-900)', border: '1px solid var(--border)', borderRadius: '8px', color: 'white', outline: 'none' }}
+                    style={{ width: '100%', padding: '0.75rem 1rem', background: 'var(--ash-900)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--heading)', outline: 'none' }}
                   />
                 </div>
                 <div>
@@ -134,7 +134,7 @@ export default function CheckoutPage() {
                     type="tel"
                     value={formData.phone}
                     onChange={e => setFormData({...formData, phone: e.target.value})}
-                    style={{ width: '100%', padding: '0.75rem 1rem', background: 'var(--ash-900)', border: '1px solid var(--border)', borderRadius: '8px', color: 'white', outline: 'none' }}
+                    style={{ width: '100%', padding: '0.75rem 1rem', background: 'var(--ash-900)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--heading)', outline: 'none' }}
                   />
                 </div>
               </div>
@@ -146,7 +146,7 @@ export default function CheckoutPage() {
                   rows={3}
                   value={formData.address}
                   onChange={e => setFormData({...formData, address: e.target.value})}
-                  style={{ width: '100%', padding: '0.75rem 1rem', background: 'var(--ash-900)', border: '1px solid var(--border)', borderRadius: '8px', color: 'white', outline: 'none', resize: 'vertical' }}
+                  style={{ width: '100%', padding: '0.75rem 1rem', background: 'var(--ash-900)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--heading)', outline: 'none', resize: 'vertical' }}
                 />
               </div>
 
@@ -156,7 +156,7 @@ export default function CheckoutPage() {
                   rows={2}
                   value={formData.notes}
                   onChange={e => setFormData({...formData, notes: e.target.value})}
-                  style={{ width: '100%', padding: '0.75rem 1rem', background: 'var(--ash-900)', border: '1px solid var(--border)', borderRadius: '8px', color: 'white', outline: 'none', resize: 'vertical' }}
+                  style={{ width: '100%', padding: '0.75rem 1rem', background: 'var(--ash-900)', border: '1px solid var(--border)', borderRadius: '8px', color: 'var(--heading)', outline: 'none', resize: 'vertical' }}
                 />
               </div>
             </form>
@@ -165,7 +165,7 @@ export default function CheckoutPage() {
 
           <div>
             <div style={{ background: 'var(--surface)', borderRadius: '16px', border: '1px solid var(--border)', padding: '1.5rem', marginBottom: '1.5rem' }}>
-              <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'white', marginBottom: '1rem' }}>Order Summary</h3>
+              <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--heading)', marginBottom: '1rem' }}>Order Summary</h3>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.5rem', maxHeight: '300px', overflowY: 'auto', paddingRight: '0.5rem' }}>
                 {items.map(item => (
@@ -174,7 +174,7 @@ export default function CheckoutPage() {
                       <img src={item.image} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     </div>
                     <div style={{ flex: 1 }}>
-                      <h4 style={{ fontSize: '0.875rem', fontWeight: 500, color: 'white', lineHeight: 1.3, marginBottom: '0.25rem' }}>{item.name}</h4>
+                      <h4 style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--heading)', lineHeight: 1.3, marginBottom: '0.25rem' }}>{item.name}</h4>
                       <p style={{ fontSize: '0.8rem', color: 'var(--ash-400)' }}>Qty: {item.quantity}</p>
                     </div>
                     <div style={{ fontWeight: 600, color: 'var(--gold-400)', fontSize: '0.9rem' }}>
@@ -187,14 +187,14 @@ export default function CheckoutPage() {
               <div style={{ borderTop: '1px dashed rgba(255,255,255,0.1)', paddingTop: '1rem', marginBottom: '1.5rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                   <span style={{ color: 'var(--ash-300)' }}>Subtotal</span>
-                  <span style={{ color: 'white' }}>₦{cartTotal.toLocaleString()}</span>
+                  <span style={{ color: 'var(--heading)' }}>₦{cartTotal.toLocaleString()}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                   <span style={{ color: 'var(--ash-300)' }}>Shipping</span>
                   <span style={{ color: 'var(--ash-400)', fontSize: '0.875rem' }}>Calculated later</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--border)' }}>
-                  <span style={{ color: 'white', fontWeight: 600, fontSize: '1.125rem' }}>Total</span>
+                  <span style={{ color: 'var(--heading)', fontWeight: 600, fontSize: '1.125rem' }}>Total</span>
                   <span style={{ color: 'var(--gold-400)', fontWeight: 700, fontSize: '1.25rem' }}>₦{cartTotal.toLocaleString()}</span>
                 </div>
               </div>
@@ -213,7 +213,7 @@ export default function CheckoutPage() {
                 type="submit"
                 disabled={loading}
                 style={{
-                  width: '100%', padding: '0.875rem', background: 'var(--gold-400)', color: 'black',
+                  width: '100%', padding: '0.875rem', background: 'var(--gold-400)', color: 'var(--on-gold)',
                   fontWeight: 600, fontSize: '1rem', borderRadius: '8px', border: 'none', cursor: loading ? 'not-allowed' : 'pointer',
                   opacity: loading ? 0.7 : 1, transition: 'opacity 200ms ease', marginBottom: '1rem'
                 }}
@@ -231,7 +231,7 @@ export default function CheckoutPage() {
                 type="button"
                 onClick={sendOrderOnWhatsApp}
                 style={{
-                  width: '100%', padding: '0.875rem', background: '#25D366', color: 'white',
+                  width: '100%', padding: '0.875rem', background: '#25D366', color: '#062d16',
                   fontWeight: 600, fontSize: '1rem', borderRadius: '8px', border: 'none', cursor: 'pointer',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', transition: 'background 200ms ease'
                 }}

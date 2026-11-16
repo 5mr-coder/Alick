@@ -1,12 +1,19 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 
 export default function SiteIntro() {
+  const pathname = usePathname();
   const [show, setShow] = useState(true);
   const [leaving, setLeaving] = useState(false);
 
   useEffect(() => {
+    // The intro only plays on the home page
+    if (pathname !== '/') {
+      setShow(false);
+      return;
+    }
     document.body.style.overflow = 'hidden';
 
     const leaveTimer = setTimeout(() => setLeaving(true), 2600);
@@ -20,12 +27,14 @@ export default function SiteIntro() {
       clearTimeout(hideTimer);
       document.body.style.overflow = '';
     };
-  }, []);
+  }, [pathname]);
 
-  if (!show) return null;
+  if (!show || pathname !== '/') return null;
 
   return (
     <div
+      className="force-dark"
+      aria-hidden="true"
       style={{
         position: 'fixed',
         inset: 0,
@@ -36,7 +45,7 @@ export default function SiteIntro() {
         justifyContent: 'center',
         overflow: 'hidden',
         opacity: leaving ? 0 : 1,
-        pointerEvents: leaving ? 'none' : 'auto',
+        pointerEvents: 'none',
         transition: 'opacity 600ms ease',
       }}
     >

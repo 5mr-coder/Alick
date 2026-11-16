@@ -39,6 +39,7 @@ export default function SmartGadgetsPage() {
       </div>
 
       <section
+        className="force-dark"
         style={{
           position: 'relative',
           padding: '5rem 0 4rem',

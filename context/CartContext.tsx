@@ -56,7 +56,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
       }
     }
     const savedMode = localStorage.getItem('alick-sales-mode');
-    if (savedMode === 'consumer' || savedMode === 'retail') setSalesMode(savedMode);
+    // Default to personal shopping so product listings are never gated behind
+    // an empty page; the compact mode picker stays available at the top.
+    setSalesMode(savedMode === 'retail' ? 'retail' : 'consumer');
     setIsLoaded(true);
   }, []);
 

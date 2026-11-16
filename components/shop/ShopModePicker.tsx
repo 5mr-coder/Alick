@@ -80,7 +80,7 @@ export default function ShopModePicker({ mode, onChange, compact = false }: Shop
                 borderRadius: '16px',
                 border: '1px solid var(--border-gold)',
                 background: 'var(--surface)',
-                color: 'white',
+                color: 'var(--heading)',
                 textAlign: 'left',
                 cursor: 'pointer',
                 transition: 'transform 180ms ease, border-color 180ms ease',

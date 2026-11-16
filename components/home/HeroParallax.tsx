@@ -39,6 +39,7 @@ export default function HeroParallax() {
 
   return (
     <section
+      className="force-dark"
       style={{
         position: 'relative',
         height: '100vh',

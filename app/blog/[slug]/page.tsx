@@ -16,13 +16,13 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
   return (
     <>
 
-      <section style={{ position: 'relative', height: '420px', overflow: 'hidden' }}>
+      <section className="force-dark" style={{ position: 'relative', height: '420px', overflow: 'hidden' }}>
         <img
           src={post.cover_image || 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=1200&q=80'}
           alt={post.title}
-          style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'brightness(0.3)' }}
+          style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'brightness(0.22)' }}
         />
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(14,15,17,1) 0%, transparent 60%)' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(8,10,14,0.98) 0%, rgba(8,10,14,0.82) 35%, rgba(8,10,14,0.45) 65%, rgba(8,10,14,0.3) 100%)' }} />
         <div className="container" style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', paddingBottom: '3rem' }}>
           <AnimatedSection>
             <Link href="/blog" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.375rem', color: 'var(--gold-400)', fontSize: '0.8125rem', fontWeight: 600, textDecoration: 'none', marginBottom: '1rem' }}>
@@ -32,7 +32,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
               Back to Blog
             </Link>
             <span className="badge badge-gold" style={{ marginBottom: '0.875rem' }}>{post.category}</span>
-            <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.6rem, 3.5vw, 2.5rem)', fontWeight: 800, color: 'white', lineHeight: 1.2, maxWidth: '760px' }}>
+            <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.6rem, 3.5vw, 2.5rem)', fontWeight: 800, color: '#F8FAFC', lineHeight: 1.2, maxWidth: '760px', textShadow: '0 2px 18px rgba(0,0,0,0.55)' }}>
               {post.title}
             </h1>
             <div style={{ marginTop: '1rem', display: 'flex', gap: '1.5rem', color: 'var(--ash-400)', fontSize: '0.8125rem' }}>
@@ -60,7 +60,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
 
 
             <AnimatedSection style={{ marginTop: '3rem', padding: '2rem', borderRadius: '12px', background: 'var(--surface)', border: '1px solid var(--border-gold)', textAlign: 'center' }}>
-              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.25rem', color: 'white', marginBottom: '0.75rem' }}>
+              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.25rem', color: 'var(--heading)', marginBottom: '0.75rem' }}>
                 Need help from our team?
               </h3>
               <p style={{ color: 'var(--ash-400)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>

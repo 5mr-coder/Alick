@@ -82,7 +82,7 @@ export default function BlogPreview() {
                         fontFamily: 'var(--font-body)',
                         fontSize: '1rem',
                         fontWeight: 700,
-                        color: 'white',
+                        color: 'var(--heading)',
                         lineHeight: 1.4,
                         marginBottom: '0.625rem',
                       }}

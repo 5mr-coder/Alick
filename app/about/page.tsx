@@ -26,7 +26,7 @@ export default function AboutPage() {
         <div className="container">
           <div style={{ maxWidth: '820px', margin: '0 auto' }}>
             <AnimatedSection>
-              <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '2.25rem', fontWeight: 800, color: 'white', marginBottom: '1.5rem', lineHeight: 1.2 }}>
+              <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '2.25rem', fontWeight: 800, color: 'var(--heading)', marginBottom: '1.5rem', lineHeight: 1.2 }}>
                 About Us – Alick System Services
               </h1>
 
@@ -50,7 +50,7 @@ export default function AboutPage() {
                 We believe that every customer deserves value for money, excellent service, and a satisfying shopping experience. That is why we are dedicated to building lasting relationships with our customers through honesty, professionalism, and customer satisfaction.
               </p>
 
-              <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', fontWeight: 700, color: 'white', marginTop: '2rem', marginBottom: '1rem' }}>
+              <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', fontWeight: 700, color: 'var(--heading)', marginTop: '2rem', marginBottom: '1rem' }}>
                 Why Choose Alick System Services?
               </h2>
 
@@ -70,7 +70,7 @@ export default function AboutPage() {
                 ))}
               </ul>
 
-              <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', fontWeight: 700, color: 'white', marginTop: '2rem', marginBottom: '1rem' }}>
+              <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem', fontWeight: 700, color: 'var(--heading)', marginTop: '2rem', marginBottom: '1rem' }}>
                 Our Location
               </h2>
 

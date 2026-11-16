@@ -40,7 +40,7 @@ export default function DesktopsPage() {
   const FilterSidebar = () => (
     <div className="filter-sidebar">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-        <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'white', fontFamily: 'var(--font-display)' }}>Filters</h3>
+        <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--heading)', fontFamily: 'var(--font-display)' }}>Filters</h3>
         <button
           onClick={resetFilters}
           style={{ background: 'transparent', border: 'none', color: 'var(--gold-400)', fontSize: '0.8125rem', cursor: 'pointer' }}
@@ -62,7 +62,7 @@ export default function DesktopsPage() {
                   onChange={() => setActiveBrand(brand)}
                   style={{ accentColor: 'var(--gold-400)' }}
                 />
-                <span style={{ fontSize: '0.875rem', color: activeBrand === brand ? 'white' : 'var(--ash-400)' }}>{brand}</span>
+                <span style={{ fontSize: '0.875rem', color: activeBrand === brand ? 'var(--heading)' : 'var(--ash-400)' }}>{brand}</span>
               </label>
             ))}
           </div>
@@ -120,7 +120,7 @@ export default function DesktopsPage() {
             <div className="main-content">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
                 <p style={{ fontSize: '0.875rem', color: 'var(--ash-400)' }}>
-                  Showing <span style={{ color: 'white', fontWeight: 600 }}>{filtered.length}</span> results
+                  Showing <span style={{ color: 'var(--heading)', fontWeight: 600 }}>{filtered.length}</span> results
                 </p>
 
                 <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
@@ -155,11 +155,11 @@ export default function DesktopsPage() {
 
               {filtered.length === 0 && (
                 <div style={{ textAlign: 'center', padding: '4rem', background: 'var(--surface)', borderRadius: '12px', border: '1px solid var(--border)', marginTop: '1rem' }}>
-                  <h3 style={{ color: 'white', fontSize: '1.125rem', marginBottom: '0.5rem' }}>No results found</h3>
+                  <h3 style={{ color: 'var(--heading)', fontSize: '1.125rem', marginBottom: '0.5rem' }}>No results found</h3>
                   <p style={{ color: 'var(--ash-400)', fontSize: '0.875rem' }}>Try adjusting your filters or search criteria.</p>
                   <button
                     onClick={resetFilters}
-                    style={{ marginTop: '1rem', padding: '0.5rem 1rem', background: 'var(--ash-800)', color: 'white', border: '1px solid var(--border)', borderRadius: '6px', cursor: 'pointer' }}
+                    style={{ marginTop: '1rem', padding: '0.5rem 1rem', background: 'var(--ash-800)', color: 'var(--heading)', border: '1px solid var(--border)', borderRadius: '6px', cursor: 'pointer' }}
                   >
                     Clear Filters
                   </button>
@@ -173,8 +173,8 @@ export default function DesktopsPage() {
       {mobileFiltersOpen && (
         <div className="mobile-filter-modal">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 1.5rem', borderBottom: '1px solid var(--border)', background: 'var(--ash-950)' }}>
-            <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: 'white' }}>Filters</h2>
-            <button onClick={() => setMobileFiltersOpen(false)} style={{ background: 'transparent', border: 'none', color: 'white', cursor: 'pointer', padding: '0.5rem' }}>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--heading)' }}>Filters</h2>
+            <button onClick={() => setMobileFiltersOpen(false)} style={{ background: 'transparent', border: 'none', color: 'var(--heading)', cursor: 'pointer', padding: '0.5rem' }}>
               <X size={24} />
             </button>
           </div>
@@ -184,13 +184,13 @@ export default function DesktopsPage() {
           <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '1rem 1.5rem', background: 'var(--ash-950)', borderTop: '1px solid var(--border)', display: 'flex', gap: '1rem' }}>
             <button
               onClick={resetFilters}
-              style={{ flex: 1, padding: '0.875rem', background: 'var(--ash-800)', color: 'white', border: '1px solid var(--border)', borderRadius: '8px', fontWeight: 600 }}
+              style={{ flex: 1, padding: '0.875rem', background: 'var(--ash-800)', color: 'var(--heading)', border: '1px solid var(--border)', borderRadius: '8px', fontWeight: 600 }}
             >
               Clear
             </button>
             <button
               onClick={() => setMobileFiltersOpen(false)}
-              style={{ flex: 2, padding: '0.875rem', background: 'var(--gold-400)', color: 'black', border: 'none', borderRadius: '8px', fontWeight: 600 }}
+              style={{ flex: 2, padding: '0.875rem', background: 'var(--gold-400)', color: 'var(--on-gold)', border: 'none', borderRadius: '8px', fontWeight: 600 }}
             >
               Show {filtered.length} Results
             </button>

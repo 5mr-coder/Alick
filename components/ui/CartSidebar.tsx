@@ -45,8 +45,8 @@ export default function CartSidebar() {
                 <div className="flex-1 flex flex-col justify-between">
                   <div>
                     <h3 className="font-medium text-sm leading-tight line-clamp-2 pr-6">{item.name}</h3>
-                    <p className="text-gold-500 font-semibold mt-1">₦{item.price.toLocaleString()}</p>
-                    <p className="text-[0.65rem] text-muted-foreground mt-1">
+                    <p style={{ color: 'var(--gold-400)' }} className="font-semibold mt-1">₦{item.price.toLocaleString()}</p>
+                    <p className="text-[0.65rem] text-muted-foreground mt-1" style={{ color: 'var(--ash-400)' }}>
                       {item.salesMode === 'retail' ? 'Retail · minimum 10' : 'Personal · maximum 9'}
                     </p>
                   </div>
@@ -59,7 +59,7 @@ export default function CartSidebar() {
                         }
                         updateQuantity(item.id, item.salesMode, item.quantity - 1);
                       }}
-                      className="p-1 rounded-md bg-muted hover:bg-ash-700 transition-colors"
+                      className="p-1 rounded-md bg-muted hover:opacity-80 transition-colors"
                       aria-label={`Decrease ${item.name} quantity`}
                     >
                       <Minus className="w-4 h-4" />
@@ -74,13 +74,13 @@ export default function CartSidebar() {
                         }
                       }}
                       disabled={item.salesMode === 'retail' ? item.quantity >= item.stock : item.quantity >= item.stock && item.quantity < 9}
-                      className={`p-1 rounded-md transition-colors ${item.salesMode === 'retail' ? item.quantity >= item.stock ? 'bg-muted/50 text-muted-foreground cursor-not-allowed' : 'bg-muted hover:bg-ash-700' : item.quantity >= item.stock && item.quantity < 9 ? 'bg-muted/50 text-muted-foreground cursor-not-allowed' : 'bg-muted hover:bg-ash-700'}`}
+                      className={`p-1 rounded-md transition-colors ${item.salesMode === 'retail' ? item.quantity >= item.stock ? 'bg-muted/50 text-muted-foreground cursor-not-allowed' : 'bg-muted hover:bg-accent' : item.quantity >= item.stock && item.quantity < 9 ? 'bg-muted/50 text-muted-foreground cursor-not-allowed' : 'bg-muted hover:bg-accent'}`}
                       aria-label={`Increase ${item.name} quantity`}
                     >
                       <Plus className="w-4 h-4" />
                     </button>
                     {(item.quantity >= item.stock || (item.salesMode === 'consumer' && item.quantity >= 9) || (item.salesMode === 'retail' && item.quantity <= 10)) && (
-                      <span className="text-[0.65rem] text-yellow-500 font-semibold ml-1">
+                      <span className="text-[0.65rem] font-semibold ml-1" style={{ color: 'var(--gold-400)' }}>
                         {item.salesMode === 'retail' && item.quantity <= 10 ? 'Retail minimum' : item.quantity >= item.stock ? 'Max stock' : 'Consumer limit'}
                       </span>
                     )}
@@ -113,7 +113,7 @@ export default function CartSidebar() {
       </div>
       {consumerPromptFor && (
         <div role="presentation" onClick={() => setConsumerPromptFor(null)} style={{ position: 'fixed', inset: 0, zIndex: 60, background: 'rgba(0,0,0,0.72)', display: 'grid', placeItems: 'center', padding: '1rem' }}>
-          <div role="dialog" aria-modal="true" aria-labelledby="cart-consumer-title" onClick={(event) => event.stopPropagation()} style={{ width: '100%', maxWidth: '440px', padding: '2rem', borderRadius: '16px', border: '1px solid var(--border-gold)', background: 'var(--ash-900)', color: 'white' }}>
+          <div role="dialog" aria-modal="true" aria-labelledby="cart-consumer-title" onClick={(event) => event.stopPropagation()} style={{ width: '100%', maxWidth: '440px', padding: '2rem', borderRadius: '16px', border: '1px solid var(--border-gold)', background: 'var(--ash-900)', color: 'var(--heading)' }}>
             <h2 id="cart-consumer-title" style={{ fontSize: '1.3rem', marginBottom: '0.75rem' }}>Need fewer than 10?</h2>
             <p style={{ color: 'var(--ash-300)', lineHeight: 1.6, marginBottom: '1.5rem' }}>
               Retail orders start at 10 units per product. Switch to personal shopping to buy between 1 and 9 units of {consumerPromptFor.name}.
@@ -122,11 +122,11 @@ export default function CartSidebar() {
               <button
                 type="button"
                 onClick={() => { switchItemToConsumer(consumerPromptFor.id); setConsumerPromptFor(null); }}
-                style={{ flex: 1, padding: '0.8rem 1rem', border: 0, borderRadius: '8px', background: 'var(--gold-400)', color: '#111', fontWeight: 700, cursor: 'pointer' }}
+                style={{ flex: 1, padding: '0.8rem 1rem', border: 0, borderRadius: '8px', background: 'var(--gold-400)', color: 'var(--on-gold)', fontWeight: 700, cursor: 'pointer' }}
               >
                 Switch to personal shopping
               </button>
-              <button type="button" onClick={() => setConsumerPromptFor(null)} style={{ padding: '0.8rem 1rem', border: '1px solid var(--border)', borderRadius: '8px', background: 'transparent', color: 'white', cursor: 'pointer' }}>
+              <button type="button" onClick={() => setConsumerPromptFor(null)} style={{ padding: '0.8rem 1rem', border: '1px solid var(--border)', borderRadius: '8px', background: 'transparent', color: 'var(--heading)', cursor: 'pointer' }}>
                 Keep retail quantity
               </button>
             </div>
@@ -135,7 +135,7 @@ export default function CartSidebar() {
       )}
       {retailPromptFor && (
         <div role="presentation" onClick={() => setRetailPromptFor(null)} style={{ position: 'fixed', inset: 0, zIndex: 60, background: 'rgba(0,0,0,0.72)', display: 'grid', placeItems: 'center', padding: '1rem' }}>
-          <div role="dialog" aria-modal="true" aria-labelledby="cart-retail-title" onClick={(event) => event.stopPropagation()} style={{ width: '100%', maxWidth: '440px', padding: '2rem', borderRadius: '16px', border: '1px solid var(--border-gold)', background: 'var(--ash-900)', color: 'white' }}>
+          <div role="dialog" aria-modal="true" aria-labelledby="cart-retail-title" onClick={(event) => event.stopPropagation()} style={{ width: '100%', maxWidth: '440px', padding: '2rem', borderRadius: '16px', border: '1px solid var(--border-gold)', background: 'var(--ash-900)', color: 'var(--heading)' }}>
             <h2 id="cart-retail-title" style={{ fontSize: '1.3rem', marginBottom: '0.75rem' }}>Need more than 9?</h2>
             <p style={{ color: 'var(--ash-300)', lineHeight: 1.6, marginBottom: '1.5rem' }}>
               {retailPromptFor.stock < 10
@@ -146,11 +146,11 @@ export default function CartSidebar() {
               <button
                 type="button"
                 onClick={() => { switchItemToRetail(retailPromptFor.id); setRetailPromptFor(null); }}
-                style={{ flex: 1, padding: '0.8rem 1rem', border: 0, borderRadius: '8px', background: 'var(--gold-400)', color: '#111', fontWeight: 700, cursor: 'pointer' }}
+                style={{ flex: 1, padding: '0.8rem 1rem', border: 0, borderRadius: '8px', background: 'var(--gold-400)', color: 'var(--on-gold)', fontWeight: 700, cursor: 'pointer' }}
               >
                 Switch to retail mode
               </button>
-              <button type="button" onClick={() => setRetailPromptFor(null)} style={{ padding: '0.8rem 1rem', border: '1px solid var(--border)', borderRadius: '8px', background: 'transparent', color: 'white', cursor: 'pointer' }}>
+              <button type="button" onClick={() => setRetailPromptFor(null)} style={{ padding: '0.8rem 1rem', border: '1px solid var(--border)', borderRadius: '8px', background: 'transparent', color: 'var(--heading)', cursor: 'pointer' }}>
                 Keep shopping
               </button>
             </div>

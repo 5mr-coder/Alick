@@ -26,7 +26,7 @@ export default function ContactPage() {
     border: '1px solid var(--border)',
     borderRadius: '8px',
     padding: '0.75rem 1rem',
-    color: 'white',
+    color: 'var(--heading)',
     fontSize: '0.9375rem',
     outline: 'none',
     transition: 'border-color 200ms ease',
@@ -58,7 +58,7 @@ export default function ContactPage() {
 
       <section className="section">
         <div className="container">
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.4fr', gap: '3rem', alignItems: 'start' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 340px), 1fr))', gap: '3rem', alignItems: 'start' }}>
 
 
             <AnimatedSection direction="right">
@@ -113,7 +113,7 @@ export default function ContactPage() {
                     padding: '1rem 1.25rem',
                     borderRadius: '10px',
                     background: 'var(--cyan-400)',
-                    color: '#0b1a23',
+                    color: 'var(--on-cyan)',
                     textDecoration: 'none',
                     fontWeight: 700,
                     fontSize: '0.9375rem',
@@ -147,14 +147,14 @@ export default function ContactPage() {
 
             <AnimatedSection direction="left">
               <div className="card" style={{ padding: '2rem' }}>
-                <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.25rem', fontWeight: 700, color: 'white', marginBottom: '1.5rem' }}>
+                <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.25rem', fontWeight: 700, color: 'var(--heading)', marginBottom: '1.5rem' }}>
                   Send a Message
                 </h2>
 
                 {status === 'success' ? (
                   <div style={{ textAlign: 'center', padding: '2rem' }}>
                     <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>✅</div>
-                    <h3 style={{ color: 'white', marginBottom: '0.5rem' }}>Message Sent!</h3>
+                    <h3 style={{ color: 'var(--heading)', marginBottom: '0.5rem' }}>Message Sent!</h3>
                     <p style={{ color: 'var(--ash-400)', fontSize: '0.9rem' }}>We&apos;ll get back to you within 24 hours.</p>
                     <button onClick={() => setStatus('idle')} style={{ marginTop: '1.5rem', background: 'none', border: 'none', color: 'var(--gold-400)', cursor: 'pointer', fontWeight: 600 }}>
                       Send another message
@@ -162,7 +162,7 @@ export default function ContactPage() {
                   </div>
                 ) : (
                   <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.125rem' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 140px), 1fr))', gap: '1rem' }}>
                       <div>
                         <label style={labelStyle}>Full Name *</label>
                         <input required style={inputStyle} placeholder="Your name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
