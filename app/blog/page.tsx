@@ -63,7 +63,6 @@ export default function BlogPage() {
                     style={{ cursor: 'pointer', height: '100%', display: 'flex', flexDirection: 'column' }}
                   >
                     <div style={{ aspectRatio: '16/9', overflow: 'hidden', background: 'var(--ash-800)' }}>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={post.cover_image}
                         alt={post.title}

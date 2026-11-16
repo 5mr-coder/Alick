@@ -71,7 +71,6 @@ export default function HeroParallax() {
               position: 'relative',
             }}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={src}
               alt=""

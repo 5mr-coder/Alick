@@ -7,8 +7,9 @@ import { X, Minus, Plus, ShoppingCart } from 'lucide-react';
 import { OriginButton } from './origin-button';
 
 export default function CartSidebar() {
-  const { items, isCartOpen, setIsCartOpen, removeFromCart, updateQuantity, switchItemToRetail, cartTotal } = useCart();
+  const { items, isCartOpen, setIsCartOpen, removeFromCart, updateQuantity, switchItemToRetail, switchItemToConsumer, cartTotal } = useCart();
   const [retailPromptFor, setRetailPromptFor] = useState<CartItem | null>(null);
+  const [consumerPromptFor, setConsumerPromptFor] = useState<CartItem | null>(null);
 
   if (!isCartOpen) return null;
 
@@ -51,8 +52,13 @@ export default function CartSidebar() {
                   </div>
                   <div className="flex items-center gap-3 mt-2">
                     <button
-                      onClick={() => updateQuantity(item.id, item.salesMode, item.quantity - 1)}
-                      disabled={item.salesMode === 'retail' && item.quantity <= 10}
+                      onClick={() => {
+                        if (item.salesMode === 'retail' && item.quantity <= 10) {
+                          setConsumerPromptFor(item);
+                          return;
+                        }
+                        updateQuantity(item.id, item.salesMode, item.quantity - 1);
+                      }}
                       className="p-1 rounded-md bg-muted hover:bg-ash-700 transition-colors"
                       aria-label={`Decrease ${item.name} quantity`}
                     >
@@ -105,6 +111,28 @@ export default function CartSidebar() {
           </div>
         )}
       </div>
+      {consumerPromptFor && (
+        <div role="presentation" onClick={() => setConsumerPromptFor(null)} style={{ position: 'fixed', inset: 0, zIndex: 60, background: 'rgba(0,0,0,0.72)', display: 'grid', placeItems: 'center', padding: '1rem' }}>
+          <div role="dialog" aria-modal="true" aria-labelledby="cart-consumer-title" onClick={(event) => event.stopPropagation()} style={{ width: '100%', maxWidth: '440px', padding: '2rem', borderRadius: '16px', border: '1px solid var(--border-gold)', background: 'var(--ash-900)', color: 'white' }}>
+            <h2 id="cart-consumer-title" style={{ fontSize: '1.3rem', marginBottom: '0.75rem' }}>Need fewer than 10?</h2>
+            <p style={{ color: 'var(--ash-300)', lineHeight: 1.6, marginBottom: '1.5rem' }}>
+              Retail orders start at 10 units per product. Switch to personal shopping to buy between 1 and 9 units of {consumerPromptFor.name}.
+            </p>
+            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                onClick={() => { switchItemToConsumer(consumerPromptFor.id); setConsumerPromptFor(null); }}
+                style={{ flex: 1, padding: '0.8rem 1rem', border: 0, borderRadius: '8px', background: 'var(--gold-400)', color: '#111', fontWeight: 700, cursor: 'pointer' }}
+              >
+                Switch to personal shopping
+              </button>
+              <button type="button" onClick={() => setConsumerPromptFor(null)} style={{ padding: '0.8rem 1rem', border: '1px solid var(--border)', borderRadius: '8px', background: 'transparent', color: 'white', cursor: 'pointer' }}>
+                Keep retail quantity
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {retailPromptFor && (
         <div role="presentation" onClick={() => setRetailPromptFor(null)} style={{ position: 'fixed', inset: 0, zIndex: 60, background: 'rgba(0,0,0,0.72)', display: 'grid', placeItems: 'center', padding: '1rem' }}>
           <div role="dialog" aria-modal="true" aria-labelledby="cart-retail-title" onClick={(event) => event.stopPropagation()} style={{ width: '100%', maxWidth: '440px', padding: '2rem', borderRadius: '16px', border: '1px solid var(--border-gold)', background: 'var(--ash-900)', color: 'white' }}>

@@ -5,32 +5,25 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
 import { ShoppingCart } from 'lucide-react';
-import { motion } from 'framer-motion';
 
 const navLinks = [
   { label: 'Home',          href: '/' },
   { label: 'Laptops',       href: '/products' },
   { label: 'Desktops',      href: '/desktops' },
   { label: 'Smart Gadgets', href: '/smart-gadgets' },
-  { label: 'Services',      href: '/services' },
+  { label: 'About',         href: '/about' },
   { label: 'Reviews',       href: '/reviews' },
+  { label: 'Services',      href: '/services' },
   { label: 'Blog',          href: '/blog' },
   { label: 'Contact',       href: '/contact' },
 ];
 
 export default function Navbar() {
-  const [scrolled, setScrolled]     = useState(false);
   const [menuOpen, setMenuOpen]     = useState(false);
   const pathname                    = usePathname();
   const [hoveredPath, setHoveredPath] = useState(pathname);
   const { items, setIsCartOpen }    = useCart();
   const cartCount = items.reduce((n, i) => n + i.quantity, 0);
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
 
   useEffect(() => {
     setMenuOpen(false);
@@ -79,7 +72,6 @@ export default function Navbar() {
                 flexShrink: 0,
               }}
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/logo.png"
                 alt="Alick System Services"
@@ -352,6 +344,11 @@ export default function Navbar() {
       </nav>
 
       <style dangerouslySetInnerHTML={{ __html: `
+        @media (max-width: 1200px) and (min-width: 1025px) {
+          ul.desktop-nav {
+            gap: 0.85rem !important;
+          }
+        }
         @media (max-width: 1024px) {
           .desktop-nav {
             display: none !important;

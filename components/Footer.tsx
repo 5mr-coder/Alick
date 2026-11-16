@@ -9,6 +9,7 @@ const footerLinks = {
   ],
   Company: [
     { label: 'About Us',  href: '/about' },
+    { label: 'Reviews',   href: '/reviews' },
     { label: 'Services',  href: '/services' },
     { label: 'Blog',      href: '/blog' },
     { label: 'Contact',   href: '/contact' },
@@ -51,7 +52,6 @@ export default function Footer() {
                   flexShrink: 0,
                 }}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src="/logo.png" alt="Alick System Services" style={{ width: '36px', objectFit: 'contain' }} />
               </div>
               <div>

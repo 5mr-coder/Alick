@@ -60,7 +60,6 @@ export default function BlogPreview() {
                 >
 
                   <div style={{ aspectRatio: '16/9', overflow: 'hidden', background: 'var(--ash-800)' }}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={post.cover_image || 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=700&q=80'}
                       alt={post.title}

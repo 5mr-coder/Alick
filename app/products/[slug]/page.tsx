@@ -16,6 +16,7 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
   const [activeImage, setActiveImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [showRetailPrompt, setShowRetailPrompt] = useState(false);
+  const [showConsumerPrompt, setShowConsumerPrompt] = useState(false);
   const product = getProductBySlug(params.slug);
 
   useEffect(() => {
@@ -186,8 +187,13 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
                 <span style={{ color: 'var(--ash-400)', fontSize: '0.875rem' }}>Qty:</span>
                 <div style={{ display: 'flex', alignItems: 'center', border: '1px solid var(--border)', borderRadius: '8px', overflow: 'hidden' }}>
                   <button
-                    onClick={() => setQuantity((current) => Math.max(salesMode === 'retail' ? 10 : 1, current - 1))}
-                    disabled={quantity <= (salesMode === 'retail' ? 10 : 1)}
+                    onClick={() => {
+                      if (salesMode === 'retail' && quantity <= 10) {
+                        setShowConsumerPrompt(true);
+                        return;
+                      }
+                      setQuantity((current) => Math.max(salesMode === 'retail' ? 10 : 1, current - 1));
+                    }}
                     aria-label="Decrease quantity"
                     style={{ padding: '0.4rem 0.75rem', background: 'var(--ash-800)', color: 'white', border: 'none', cursor: 'pointer', fontSize: '1rem' }}
                   >−</button>
@@ -245,6 +251,29 @@ export default function ProductPage({ params }: { params: { slug: string } }) {
           </div>
         </div>
       </div>
+
+      {showConsumerPrompt && (
+        <div role="presentation" onClick={() => setShowConsumerPrompt(false)} style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(0,0,0,0.72)', display: 'grid', placeItems: 'center', padding: '1rem' }}>
+          <div role="dialog" aria-modal="true" aria-labelledby="consumer-prompt-title" onClick={(event) => event.stopPropagation()} style={{ width: '100%', maxWidth: '440px', padding: '2rem', borderRadius: '16px', border: '1px solid var(--border-gold)', background: 'var(--ash-900)', color: 'white' }}>
+            <h2 id="consumer-prompt-title" style={{ fontSize: '1.4rem', marginBottom: '0.75rem' }}>Ordering fewer than 10?</h2>
+            <p style={{ color: 'var(--ash-300)', lineHeight: 1.6, marginBottom: '1.5rem' }}>
+              Retail mode starts at 10 units. Switch to personal shopping to buy between 1 and 9 units of this product.
+            </p>
+            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                onClick={() => { setSalesMode('consumer'); setQuantity(Math.min(9, product.stock)); setShowConsumerPrompt(false); }}
+                style={{ flex: 1, padding: '0.8rem 1rem', border: 0, borderRadius: '8px', background: 'var(--gold-400)', color: '#111', fontWeight: 700, cursor: 'pointer' }}
+              >
+                Switch to personal shopping
+              </button>
+              <button type="button" onClick={() => setShowConsumerPrompt(false)} style={{ padding: '0.8rem 1rem', border: '1px solid var(--border)', borderRadius: '8px', background: 'transparent', color: 'white', cursor: 'pointer' }}>
+                Keep retail quantity
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showRetailPrompt && (
         <div role="presentation" onClick={() => setShowRetailPrompt(false)} style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(0,0,0,0.72)', display: 'grid', placeItems: 'center', padding: '1rem' }}>

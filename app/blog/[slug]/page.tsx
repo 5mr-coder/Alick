@@ -17,7 +17,6 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
     <>
 
       <section style={{ position: 'relative', height: '420px', overflow: 'hidden' }}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={post.cover_image || 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=1200&q=80'}
           alt={post.title}

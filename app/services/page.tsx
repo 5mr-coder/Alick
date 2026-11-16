@@ -71,7 +71,6 @@ export default function ServicesPage() {
         }}
       >
         <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=1400&q=80"
             alt=""

@@ -71,7 +71,6 @@ export default function HomePage() {
                     el.style.transform = 'none';
                   }}
                 >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={cat.image}
                     alt={cat.label}

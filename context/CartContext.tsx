@@ -20,6 +20,7 @@ interface CartContextType {
   removeFromCart: (id: string, mode: SalesMode) => void;
   updateQuantity: (id: string, mode: SalesMode, quantity: number) => void;
   switchItemToRetail: (id: string) => void;
+  switchItemToConsumer: (id: string) => void;
   clearCart: () => void;
   cartTotal: number;
   isCartOpen: boolean;
@@ -127,6 +128,28 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setSalesMode('retail');
   };
 
+  const switchItemToConsumer = (id: string) => {
+    setItems((current) => {
+      const retailItem = current.find((item) => item.id === id && item.salesMode === 'retail');
+      if (!retailItem) return current;
+
+      const maximum = Math.min(retailItem.stock, 9);
+      const quantity = Math.min(maximum, Math.max(1, retailItem.quantity));
+      const consumerItem = current.find((item) => item.id === id && item.salesMode === 'consumer');
+
+      if (consumerItem) {
+        return current
+          .filter((item) => item !== retailItem && item !== consumerItem)
+          .concat({ ...consumerItem, quantity: Math.min(maximum, Math.max(1, consumerItem.quantity + quantity)) });
+      }
+
+      return current.map((item) =>
+        item === retailItem ? { ...item, salesMode: 'consumer' as SalesMode, quantity } : item
+      );
+    });
+    setSalesMode('consumer');
+  };
+
   const clearCart = () => setItems([]);
 
   const cartTotal = items.reduce((total, item) => total + item.price * item.quantity, 0);
@@ -139,6 +162,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         removeFromCart,
         updateQuantity,
         switchItemToRetail,
+        switchItemToConsumer,
         clearCart,
         cartTotal,
         isCartOpen,

@@ -16,7 +16,7 @@ export const products: Product[] = [
     description: 'Business powerhouse with a stunning display, strong security features, and all-day battery life.',
     price: 680000,
     old_price: 750000,
-    stock: 5,
+    stock: 100,
     brand: 'HP',
     model: 'EliteBook 840 G9',
     specs: { RAM: '16GB', Storage: '512GB SSD', Processor: 'Intel i7' },
@@ -35,7 +35,7 @@ export const products: Product[] = [
     description: 'The creator\'s ultimate laptop with a gorgeous OLED panel, powerful performance, and premium build.',
     price: 1250000,
     old_price: 1400000,
-    stock: 3,
+    stock: 100,
     brand: 'Dell',
     model: 'XPS 15 9530',
     specs: { RAM: '32GB', Storage: '1TB SSD', Processor: 'Intel i9' },
@@ -54,7 +54,7 @@ export const products: Product[] = [
     description: 'Ultra-light, ultra-durable business laptop that travels as hard as you do.',
     price: 890000,
     old_price: 980000,
-    stock: 7,
+    stock: 100,
     brand: 'Lenovo',
     model: 'ThinkPad X1 Carbon Gen 11',
     specs: { RAM: '16GB', Storage: '512GB SSD', Processor: 'Intel i7' },
@@ -73,7 +73,7 @@ export const products: Product[] = [
     description: 'Apple silicon at its finest — silent, fast, and incredibly efficient.',
     price: 1550000,
     old_price: 0,
-    stock: 4,
+    stock: 100,
     brand: 'Apple',
     model: 'MacBook Air 15" M3',
     specs: { RAM: '16GB', Storage: '512GB SSD', Processor: 'Apple M3' },
@@ -109,8 +109,6 @@ export interface Product {
   tags?: Tag[];
 }
 
-export type ProductsData = Product[];
-
 export function getProductsByCategory(slug: string): Product[] {
   return products.filter((p) => p.category_id === slug && p.is_published);
 }
@@ -126,12 +124,6 @@ export function getFeaturedProducts(): Product[] {
 export function getFlashSaleProducts(): Product[] {
   return products.filter((p) => p.is_flash_sale && p.is_published);
 }
-
-export function getFlashSaleProductsStatic(): Product[] {
-  return flashSaleProductsStatic;
-}
-
-export const flashSaleProducts = products.filter((p) => p.is_flash_sale && p.is_published);
 
 export { postsStatic as posts };
 
@@ -170,28 +162,6 @@ export interface BlogPost {
   created_at: string;
   updated_at: string;
 }
-
-const flashSaleProductsStatic: Product[] = [
-  {
-    id: 'dell-xps-15-oled',
-    category_id: 'laptops',
-    name: 'Dell XPS 15 OLED',
-    slug: 'dell-xps-15-oled',
-    description: 'The creator\'s ultimate laptop with a gorgeous OLED panel, powerful performance, and premium build.',
-    price: 1250000,
-    old_price: 1400000,
-    stock: 3,
-    brand: 'Dell',
-    model: 'XPS 15 9530',
-    specs: { RAM: '32GB', Storage: '1TB SSD', Processor: 'Intel i9' },
-    images: ['https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=600&q=80'],
-    is_featured: true,
-    is_flash_sale: true,
-    is_published: true,
-    created_at: '2026-01-01T00:00:00.000Z',
-    updated_at: '2026-01-01T00:00:00.000Z',
-  },
-];
 
 const postsStatic: BlogPost[] = [
   {

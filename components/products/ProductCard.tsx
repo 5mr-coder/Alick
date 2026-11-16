@@ -17,7 +17,6 @@ export default function ProductCard({ product }: ProductCardProps) {
 
         <div style={{ position: 'relative', aspectRatio: '4/3', overflow: 'hidden', background: 'var(--ash-800)' }}>
           {product.images?.[0] ? (
-            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={product.images[0]}
               alt={product.name}

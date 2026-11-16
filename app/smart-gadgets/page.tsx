@@ -47,7 +47,6 @@ export default function SmartGadgetsPage() {
         }}
       >
         <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/smart-glasses.jpg"
             alt=""
