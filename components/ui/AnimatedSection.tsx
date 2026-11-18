@@ -11,6 +11,23 @@ interface AnimatedSectionProps {
   style?: React.CSSProperties;
 }
 
+function getInitialTransform(
+  direction: 'up' | 'down' | 'left' | 'right' | 'fade'
+) {
+  switch (direction) {
+    case 'up':
+      return 'translateY(48px)';
+    case 'down':
+      return 'translateY(-48px)';
+    case 'left':
+      return 'translateX(48px)';
+    case 'right':
+      return 'translateX(-48px)';
+    case 'fade':
+      return 'none';
+  }
+}
+
 export default function AnimatedSection({
   children,
   className = '',
@@ -20,16 +37,6 @@ export default function AnimatedSection({
   style,
 }: AnimatedSectionProps) {
   const ref = useRef<HTMLDivElement>(null);
-
-  const getInitialTransform = () => {
-    switch (direction) {
-      case 'up':    return 'translateY(48px)';
-      case 'down':  return 'translateY(-48px)';
-      case 'left':  return 'translateX(48px)';
-      case 'right': return 'translateX(-48px)';
-      case 'fade':  return 'none';
-    }
-  };
 
   useEffect(() => {
     const el = ref.current;
@@ -56,7 +63,7 @@ export default function AnimatedSection({
     }
 
     el.style.opacity = '0';
-    el.style.transform = getInitialTransform();
+    el.style.transform = getInitialTransform(direction);
     el.style.transition = `opacity 0.75s ease ${delay}ms, transform 0.75s cubic-bezier(0.22,1,0.36,1) ${delay}ms`;
 
     let revealed = false;

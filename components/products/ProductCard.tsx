@@ -1,69 +1,151 @@
-"use client";
+'use client';
+
 import Link from 'next/link';
-import { Product } from '@/types';
+import type { Product } from '@/types';
+import { useCart } from '@/context/CartContext';
+import { formatNaira, getEffectiveUnitPrice } from '@/lib/utils';
 
 interface ProductCardProps {
   product: Product;
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
-  const discount = product.old_price
-    ? Math.round(((product.old_price - product.price) / product.old_price) * 100)
-    : null;
+  const { salesMode } = useCart();
+  const effectivePrice = getEffectiveUnitPrice(product, salesMode);
+
+  const strikePrice =
+    product.old_price && product.old_price > effectivePrice
+      ? product.old_price
+      : product.base_price > effectivePrice
+        ? product.base_price
+        : 0;
+
+  const discount =
+    strikePrice > effectivePrice
+      ? Math.round(((strikePrice - effectivePrice) / strikePrice) * 100)
+      : null;
 
   return (
     <Link href={`/products/${product.slug}`} style={{ textDecoration: 'none' }}>
       <article className="card" style={{ cursor: 'pointer' }}>
-
-        <div style={{ position: 'relative', aspectRatio: '4/3', overflow: 'hidden', background: 'var(--ash-800)' }}>
+        <div
+          style={{
+            position: 'relative',
+            aspectRatio: '4/3',
+            overflow: 'hidden',
+            background: 'var(--ash-800)',
+          }}
+        >
           {product.images?.[0] ? (
             <img
               src={product.images[0]}
               alt={product.name}
-              style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 400ms ease' }}
-              onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.transform = 'scale(1.06)')}
-              onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.transform = 'scale(1)')}
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                transition: 'transform 400ms ease',
+              }}
+              onMouseEnter={(e) =>
+                ((e.currentTarget as HTMLElement).style.transform = 'scale(1.06)')
+              }
+              onMouseLeave={(e) =>
+                ((e.currentTarget as HTMLElement).style.transform = 'scale(1)')
+              }
             />
           ) : (
             <div
               className="skeleton"
-              style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              style={{
+                width: '100%',
+                height: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
             >
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--ash-600)" strokeWidth="1">
+              <svg
+                width="48"
+                height="48"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="var(--ash-600)"
+                strokeWidth="1"
+              >
                 <rect x="2" y="3" width="20" height="14" rx="2" />
                 <path d="M8 21h8M12 17v4" />
               </svg>
             </div>
           )}
 
-
-          <div style={{ position: 'absolute', top: '0.75rem', left: '0.75rem', display: 'flex', gap: '0.375rem', flexWrap: 'wrap' }}>
-            {product.is_flash_sale && <span className="badge badge-sale">Flash Sale</span>}
-            {product.is_featured && !product.is_flash_sale && <span className="badge badge-gold">Featured</span>}
-            {(discount ?? 0) > 0 && <span className="badge badge-sale">-{discount}%</span>}
+          <div
+            style={{
+              position: 'absolute',
+              top: '0.75rem',
+              left: '0.75rem',
+              display: 'flex',
+              gap: '0.375rem',
+              flexWrap: 'wrap',
+            }}
+          >
+            {product.is_flash_sale && (
+              <span className="badge badge-sale">Flash Sale</span>
+            )}
+            {product.is_featured && !product.is_flash_sale && (
+              <span className="badge badge-gold">Featured</span>
+            )}
+            {(discount ?? 0) > 0 && (
+              <span className="badge badge-sale">-{discount}%</span>
+            )}
             {product.stock > 0 && product.stock < 5 && (
-              <span style={{
-                fontSize: '0.65rem', fontWeight: 700, padding: '0.2rem 0.5rem',
-                borderRadius: '4px',               background: 'rgba(245,200,66,0.12)',
-                color: 'var(--gold-400)', border: '1px solid var(--border-gold)',
-                letterSpacing: '0.05em', textTransform: 'uppercase',
-              }}>Low Stock</span>
+              <span
+                style={{
+                  fontSize: '0.65rem',
+                  fontWeight: 700,
+                  padding: '0.2rem 0.5rem',
+                  borderRadius: '4px',
+                  background: 'rgba(245,200,66,0.12)',
+                  color: 'var(--gold-400)',
+                  border: '1px solid var(--border-gold)',
+                  letterSpacing: '0.05em',
+                  textTransform: 'uppercase',
+                }}
+              >
+                Low Stock
+              </span>
             )}
             {product.stock === 0 && (
-              <span style={{
-                fontSize: '0.65rem', fontWeight: 700, padding: '0.2rem 0.5rem',
-                borderRadius: '4px',               background: 'rgba(34,211,238,0.12)',
-                color: 'var(--cyan-400)', border: '1px solid var(--cyan-glow)',
-                letterSpacing: '0.05em', textTransform: 'uppercase',
-              }}>Out of Stock</span>
+              <span
+                style={{
+                  fontSize: '0.65rem',
+                  fontWeight: 700,
+                  padding: '0.2rem 0.5rem',
+                  borderRadius: '4px',
+                  background: 'rgba(34,211,238,0.12)',
+                  color: 'var(--cyan-400)',
+                  border: '1px solid var(--cyan-glow)',
+                  letterSpacing: '0.05em',
+                  textTransform: 'uppercase',
+                }}
+              >
+                Out of Stock
+              </span>
             )}
           </div>
         </div>
 
-
         <div style={{ padding: '1rem' }}>
           {product.brand && (
-            <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--gold-400)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '0.25rem' }}>
+            <div
+              style={{
+                fontSize: '0.7rem',
+                fontWeight: 600,
+                color: 'var(--gold-400)',
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase',
+                marginBottom: '0.25rem',
+              }}
+            >
               {product.brand}
             </div>
           )}
@@ -85,9 +167,15 @@ export default function ProductCard({ product }: ProductCardProps) {
             {product.name}
           </h3>
 
-
           {product.specs && (
-            <div style={{ display: 'flex', gap: '0.375rem', flexWrap: 'wrap', marginBottom: '0.875rem' }}>
+            <div
+              style={{
+                display: 'flex',
+                gap: '0.375rem',
+                flexWrap: 'wrap',
+                marginBottom: '0.875rem',
+              }}
+            >
               {Object.entries(product.specs)
                 .slice(0, 3)
                 .map(([key, val]) => (
@@ -108,8 +196,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             </div>
           )}
 
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
             <span
               style={{
                 fontFamily: 'var(--font-display)',
@@ -118,9 +205,9 @@ export default function ProductCard({ product }: ProductCardProps) {
                 color: 'var(--gold-400)',
               }}
             >
-              ₦{product.price.toLocaleString()}
+              {formatNaira(effectivePrice)}
             </span>
-            {(product.old_price ?? 0) > 0 && (
+            {strikePrice > 0 && (
               <span
                 style={{
                   fontSize: '0.8125rem',
@@ -128,7 +215,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                   textDecoration: 'line-through',
                 }}
               >
-                ₦{product.old_price!.toLocaleString()}
+                {formatNaira(strikePrice)}
               </span>
             )}
           </div>
@@ -137,4 +224,3 @@ export default function ProductCard({ product }: ProductCardProps) {
     </Link>
   );
 }
-

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
@@ -22,14 +22,16 @@ const navLinks = [
 export default function Navbar() {
   const [menuOpen, setMenuOpen]     = useState(false);
   const pathname                    = usePathname();
+  const [prevPathname, setPrevPathname] = useState(pathname);
   const [hoveredPath, setHoveredPath] = useState(pathname);
   const { items, setIsCartOpen }    = useCart();
   const cartCount = items.reduce((n, i) => n + i.quantity, 0);
 
-  useEffect(() => {
+  if (pathname !== prevPathname) {
+    setPrevPathname(pathname);
     setMenuOpen(false);
     setHoveredPath(pathname);
-  }, [pathname]);
+  }
 
   const cartBadge = (
     <span

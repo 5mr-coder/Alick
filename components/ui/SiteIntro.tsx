@@ -11,7 +11,6 @@ export default function SiteIntro() {
   useEffect(() => {
     // The intro only plays on the home page
     if (pathname !== '/') {
-      setShow(false);
       return;
     }
     document.body.style.overflow = 'hidden';

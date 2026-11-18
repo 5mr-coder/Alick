@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { OriginButton } from './origin-button';
+import { OriginButton, type OriginButtonProps } from './origin-button';
 import { cn } from '@/lib/utils';
 
 type Variant = 'primary' | 'secondary' | 'ghost' | 'outline';
@@ -67,7 +67,7 @@ const Button: React.FC<ButtonProps> = ({
         className
       )}
       loading={loading}
-      {...(props as any)}
+      {...(props as Omit<OriginButtonProps, 'children' | 'className' | 'loading'>)}
     >
       {content}
     </OriginButton>

@@ -205,16 +205,18 @@ export function SunMoonThemeToggle({
   React.useEffect(() => {
     if (initialized.current) return;
     initialized.current = true;
-    if (!isControlled) {
-      const stored = storageKey ? window.localStorage.getItem(storageKey) : null;
-      const initial: SunMoonTheme =
-        stored === "light" || stored === "dark" ? stored : syncDocument ? readDocumentTheme() : defaultTheme;
-      setInternalTheme(initial);
-      if (syncDocument && initial !== readDocumentTheme()) {
-        document.documentElement.classList.toggle("dark", initial === "dark");
+    queueMicrotask(() => {
+      if (!isControlled) {
+        const stored = storageKey ? window.localStorage.getItem(storageKey) : null;
+        const initial: SunMoonTheme =
+          stored === "light" || stored === "dark" ? stored : syncDocument ? readDocumentTheme() : defaultTheme;
+        setInternalTheme(initial);
+        if (syncDocument && initial !== readDocumentTheme()) {
+          document.documentElement.classList.toggle("dark", initial === "dark");
+        }
       }
-    }
-    setMounted(true);
+      setMounted(true);
+    });
   }, [isControlled, defaultTheme, storageKey, syncDocument]);
 
   React.useEffect(() => {

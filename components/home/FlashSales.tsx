@@ -4,34 +4,44 @@ import { useState, useEffect } from 'react';
 import AnimatedSection from '@/components/ui/AnimatedSection';
 import ProductCard from '@/components/products/ProductCard';
 import Button from '@/components/ui/Button';
-import { Product, getFlashSaleProducts } from '@/types';
+import type { Product } from '@/types';
 
-
-function useCountdown(endDate: Date) {
-  const [timeLeft, setTimeLeft] = useState({ h: 0, m: 0, s: 0 });
+function useCountdown(targetIso: string | null) {
+  const [timeLeft, setTimeLeft] = useState({ h: 0, m: 0, s: 0, expired: false });
 
   useEffect(() => {
+    if (!targetIso) return;
+    const endTime = new Date(targetIso).getTime();
+
     const tick = () => {
-      const diff = endDate.getTime() - Date.now();
+      const diff = endTime - Date.now();
       if (diff <= 0) {
-        setTimeLeft({ h: 0, m: 0, s: 0 });
+        setTimeLeft({ h: 0, m: 0, s: 0, expired: true });
         return;
       }
       const h = Math.floor(diff / 3600000);
       const m = Math.floor((diff % 3600000) / 60000);
       const s = Math.floor((diff % 60000) / 1000);
-      setTimeLeft({ h, m, s });
+      setTimeLeft({ h, m, s, expired: false });
     };
+
     tick();
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
-  }, [endDate]);
+  }, [targetIso]);
 
   return timeLeft;
 }
 
 const Segment = ({ value, label }: { value: number; label: string }) => (
-  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.2rem' }}>
+  <div
+    style={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      gap: '0.2rem',
+    }}
+  >
     <div
       style={{
         background: 'var(--ash-800)',
@@ -50,24 +60,29 @@ const Segment = ({ value, label }: { value: number; label: string }) => (
     >
       {String(value).padStart(2, '0')}
     </div>
-    <span style={{ fontSize: '0.6rem', color: 'var(--ash-500)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+    <span
+      style={{
+        fontSize: '0.6rem',
+        color: 'var(--ash-500)',
+        letterSpacing: '0.1em',
+        textTransform: 'uppercase',
+      }}
+    >
       {label}
     </span>
   </div>
 );
 
-export default function FlashSales() {
-  const products = getFlashSaleProducts();
-  const [endDate] = useState<Date>(() => new Date('2026-12-31T23:59:59.000Z'));
+export default function FlashSales({
+  products,
+  endsAt,
+}: {
+  products: Product[];
+  endsAt: string | null;
+}) {
+  const { h, m, s, expired } = useCountdown(endsAt);
 
-  if (products.length === 0) {
-    return null;
-  }
-
-  const { h, m, s } = useCountdown(endDate);
-  const expired = endDate.getTime() - Date.now() <= 0;
-
-  if (expired) {
+  if (products.length === 0 || expired) {
     return null;
   }
 
@@ -75,13 +90,13 @@ export default function FlashSales() {
     <section
       className="section"
       style={{
-        background: 'linear-gradient(180deg, var(--ash-900) 0%, var(--ash-950) 100%)',
+        background:
+          'linear-gradient(180deg, var(--ash-900) 0%, var(--ash-950) 100%)',
         borderTop: '1px solid var(--border)',
         borderBottom: '1px solid var(--border)',
       }}
     >
       <div className="container">
-
         <AnimatedSection
           style={{
             display: 'flex',
@@ -94,24 +109,52 @@ export default function FlashSales() {
         >
           <div>
             <div className="section-label" style={{ color: 'var(--cyan-400)' }}>
-              <span style={{ background: 'var(--cyan-400)', width: '2rem', height: '1px', display: 'inline-block' }} />
+              <span
+                style={{
+                  background: 'var(--cyan-400)',
+                  width: '2rem',
+                  height: '1px',
+                  display: 'inline-block',
+                }}
+              />
               Limited Time Only
             </div>
-            <h2 className="section-heading" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <h2
+              className="section-heading"
+              style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}
+            >
               ⚡ Flash Sales
             </h2>
           </div>
 
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Segment value={h} label="Hrs" />
-            <span style={{ color: 'var(--gold-400)', fontWeight: 700, fontSize: '1.2rem', marginBottom: '1.2rem' }}>:</span>
-            <Segment value={m} label="Min" />
-            <span style={{ color: 'var(--gold-400)', fontWeight: 700, fontSize: '1.2rem', marginBottom: '1.2rem' }}>:</span>
-            <Segment value={s} label="Sec" />
-          </div>
+          {endsAt && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Segment value={h} label="Hrs" />
+              <span
+                style={{
+                  color: 'var(--gold-400)',
+                  fontWeight: 700,
+                  fontSize: '1.2rem',
+                  marginBottom: '1.2rem',
+                }}
+              >
+                :
+              </span>
+              <Segment value={m} label="Min" />
+              <span
+                style={{
+                  color: 'var(--gold-400)',
+                  fontWeight: 700,
+                  fontSize: '1.2rem',
+                  marginBottom: '1.2rem',
+                }}
+              >
+                :
+              </span>
+              <Segment value={s} label="Sec" />
+            </div>
+          )}
         </AnimatedSection>
-
 
         <div
           style={{

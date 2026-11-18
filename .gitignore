@@ -1,11 +1,13 @@
 .vercel
-node_modules
-.next
+node_modules/
+.next/
+dist/
+out/
 .env
 .env.local
 .env.*.local
-dist
-out
+.env*.local
+supabase/.temp/
 *.tsbuildinfo
 tsconfig.tsbuildinfo
 .DS_Store
@@ -14,3 +16,6 @@ freebuff
 
 # public assets that are external references only
 images.jpg
+graphify-out/
+.agents/
+skills-lock.json

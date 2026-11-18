@@ -2,8 +2,9 @@
 
 import { useEffect, useRef } from 'react';
 import Button from '@/components/ui/Button';
+import type { SiteBanner } from '@/types';
 
-const heroImages = [
+const defaultHeroImages = [
   'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=800&q=80',
   'https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?w=800&q=80',
   'https://images.unsplash.com/photo-1593642632559-0c6d3fc62b89?w=800&q=80',
@@ -12,15 +13,53 @@ const heroImages = [
   'https://images.unsplash.com/photo-1629131726692-1accd0c53ce0?w=800&q=80',
 ];
 
+const defaultStats = [
+  { value: '500+', label: 'Products Sold' },
+  { value: '4.9★', label: 'Customer Rating' },
+  { value: '24hr', label: 'Repair Turnaround' },
+];
+
 const ArrowRight = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.5"
+  >
     <path d="M5 12h14M12 5l7 7-7 7" />
   </svg>
 );
 
-export default function HeroParallax() {
-  const bgRef   = useRef<HTMLDivElement>(null);
+export default function HeroParallax({ banner }: { banner?: SiteBanner | null }) {
+  const bgRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLDivElement>(null);
+
+  const heroImages =
+    banner?.media_urls && banner.media_urls.length > 0
+      ? banner.media_urls
+      : defaultHeroImages;
+  const label = banner?.metadata?.label || 'Smart Tech. Sharp Deals.';
+  const headline = banner?.headline || "Lagos' Premier Tech Store.";
+  const subheadline =
+    banner?.subheadline ||
+    "Laptops, desktops, smart gadgets, and expert repairs — all under one roof at Ikeja, Lagos. Quality guaranteed, prices you'll love.";
+  const ctaText = banner?.cta_text || 'Shop Laptops';
+  const ctaLink = banner?.cta_link || '/products';
+  const secondaryCta = banner?.metadata?.secondary_cta ?? {
+    text: 'Our Services',
+    link: '/services',
+  };
+  const stats =
+    banner?.metadata?.stats && banner.metadata.stats.length > 0
+      ? banner.metadata.stats
+      : defaultStats;
+
+  const words = headline.trim().split(/\s+/);
+  const splitIndex = Math.max(1, words.length - 2);
+  const headlineStart = words.slice(0, splitIndex).join(' ');
+  const headlineAccent = words.slice(splitIndex).join(' ');
 
   useEffect(() => {
     const handleScroll = () => {
@@ -30,7 +69,7 @@ export default function HeroParallax() {
       }
       if (textRef.current) {
         textRef.current.style.transform = `translateY(${scrollY * 0.18}px)`;
-        textRef.current.style.opacity   = String(Math.max(0, 1 - scrollY / 600));
+        textRef.current.style.opacity = String(Math.max(0, 1 - scrollY / 600));
       }
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -49,7 +88,6 @@ export default function HeroParallax() {
         alignItems: 'center',
       }}
     >
-
       <div
         ref={bgRef}
         style={{
@@ -63,9 +101,9 @@ export default function HeroParallax() {
           willChange: 'transform',
         }}
       >
-        {heroImages.map((src, i) => (
+        {heroImages.slice(0, 6).map((src, i) => (
           <div
-            key={i}
+            key={`${src}-${i}`}
             style={{
               borderRadius: '12px',
               overflow: 'hidden',
@@ -86,7 +124,6 @@ export default function HeroParallax() {
           </div>
         ))}
       </div>
-
 
       <div
         style={{
@@ -116,24 +153,24 @@ export default function HeroParallax() {
           width: '600px',
           height: '600px',
           borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(245,200,66,0.08) 0%, transparent 70%)',
+          background:
+            'radial-gradient(circle, rgba(245,200,66,0.08) 0%, transparent 70%)',
           pointerEvents: 'none',
         }}
       />
 
-
-      <div
-        className="container"
-        style={{ position: 'relative', zIndex: 10 }}
-      >
-        <div ref={textRef} style={{ maxWidth: '640px', willChange: 'transform, opacity' }}>
+      <div className="container" style={{ position: 'relative', zIndex: 10 }}>
+        <div
+          ref={textRef}
+          style={{ maxWidth: '640px', willChange: 'transform, opacity' }}
+        >
           <div
             className="section-label"
             style={{
               animation: 'fadeUp 0.6s ease 0.1s both',
             }}
           >
-            Smart Tech. Sharp Deals.
+            {label}
           </div>
 
           <h1
@@ -147,8 +184,10 @@ export default function HeroParallax() {
               animation: 'fadeUp 0.7s ease 0.25s both',
             }}
           >
-            Lagos&apos; Premier{' '}
-            <span className="text-gradient">Tech Store.</span>
+            {headlineStart}{' '}
+            {headlineAccent && (
+              <span className="text-gradient">{headlineAccent}</span>
+            )}
           </h1>
 
           <p
@@ -161,8 +200,7 @@ export default function HeroParallax() {
               animation: 'fadeUp 0.7s ease 0.4s both',
             }}
           >
-            Laptops, desktops, smart gadgets, and expert repairs — all under one roof at Ikeja, Lagos.
-            Quality guaranteed, prices you&apos;ll love.
+            {subheadline}
           </p>
 
           <div
@@ -173,14 +211,19 @@ export default function HeroParallax() {
               animation: 'fadeUp 0.7s ease 0.55s both',
             }}
           >
-            <Button size="lg" href="/products" icon={<ArrowRight />}>
-              Shop Laptops
+            <Button size="lg" href={ctaLink} icon={<ArrowRight />}>
+              {ctaText}
             </Button>
-            <Button size="lg" variant="outline" href="/services">
-              Our Services
-            </Button>
+            {secondaryCta?.text && (
+              <Button
+                size="lg"
+                variant="outline"
+                href={secondaryCta.link || '/services'}
+              >
+                {secondaryCta.text}
+              </Button>
+            )}
           </div>
-
 
           <div
             style={{
@@ -191,11 +234,7 @@ export default function HeroParallax() {
               animation: 'fadeUp 0.7s ease 0.7s both',
             }}
           >
-            {[
-              { value: '500+', label: 'Products Sold' },
-              { value: '4.9★', label: 'Customer Rating' },
-              { value: '24hr', label: 'Repair Turnaround' },
-            ].map((stat) => (
+            {stats.map((stat) => (
               <div key={stat.label}>
                 <div
                   style={{
@@ -208,7 +247,13 @@ export default function HeroParallax() {
                 >
                   {stat.value}
                 </div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--ash-400)', marginTop: '0.25rem' }}>
+                <div
+                  style={{
+                    fontSize: '0.75rem',
+                    color: 'var(--ash-400)',
+                    marginTop: '0.25rem',
+                  }}
+                >
                   {stat.label}
                 </div>
               </div>
@@ -216,7 +261,6 @@ export default function HeroParallax() {
           </div>
         </div>
       </div>
-
 
       <div
         style={{
@@ -232,7 +276,14 @@ export default function HeroParallax() {
           zIndex: 10,
         }}
       >
-        <span style={{ fontSize: '0.7rem', letterSpacing: '0.2em', color: 'var(--ash-500)', textTransform: 'uppercase' }}>
+        <span
+          style={{
+            fontSize: '0.7rem',
+            letterSpacing: '0.2em',
+            color: 'var(--ash-500)',
+            textTransform: 'uppercase',
+          }}
+        >
           Scroll
         </span>
         <div

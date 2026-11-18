@@ -1,9 +1,8 @@
 @import url('https://api.fontshare.com/v2/css?f%5B%5D=zodiak@400,700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Gabriela&family=Playwrite+USA+Modern&display=swap');
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@config "../tailwind.config.js";
+@custom-variant dark (&:where(.dark, .dark *));
 
 @layer base {
   :root {
@@ -171,25 +170,27 @@ html .force-dark {
   --on-cyan: #06302b;
 }
 
-*, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
 
-html {
-  scroll-behavior: smooth;
-  -webkit-font-smoothing: antialiased;
-}
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+  }
 
-body {
-  background-color: var(--ash-950);
-  color: var(--ash-100);
-  font-family: var(--font-body);
-  font-size: 1rem;
-  line-height: 1.6;
-  overflow-x: hidden;
-  transition: background-color 250ms ease, color 250ms ease;
+  body {
+    background-color: var(--ash-950);
+    color: var(--ash-100);
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.6;
+    overflow-x: hidden;
+    transition: background-color 250ms ease, color 250ms ease;
+  }
 }
 
 /* ── Scrollbar ── */
