@@ -5,6 +5,12 @@ import { useRouter } from 'next/navigation';
 import type { AdminSiteSettings } from '@/types';
 import { saveSettingsAction } from '@/lib/actions/settings';
 import { koboToNaira, nairaToKobo } from '@/lib/utils';
+import {
+  adminHelperStyle,
+  adminInputStyle,
+  adminLabelStyle,
+  NairaPriceField,
+} from '@/components/admin/AdminHelpers';
 
 export default function SettingsManager({
   initialSettings,
@@ -12,6 +18,8 @@ export default function SettingsManager({
   initialSettings: AdminSiteSettings;
 }) {
   const router = useRouter();
+  const initialSocial = initialSettings.social_links ?? {};
+
   const [form, setForm] = useState({
     siteName: initialSettings.site_name,
     tagline: initialSettings.tagline,
@@ -19,7 +27,10 @@ export default function SettingsManager({
     email: initialSettings.email,
     address: initialSettings.address,
     whatsappNumber: initialSettings.whatsapp_number,
-    socialLinksJson: JSON.stringify(initialSettings.social_links ?? {}, null, 2),
+    whatsappLink: initialSocial.whatsapp ?? '',
+    instagramUrl: initialSocial.instagram ?? '',
+    facebookUrl: initialSocial.facebook ?? '',
+    twitterUrl: initialSocial.twitter ?? initialSocial.x ?? '',
     ikejaPickupNaira: String(
       koboToNaira(initialSettings.shipping_rates.ikeja_pickup)
     ),
@@ -34,27 +45,27 @@ export default function SettingsManager({
     ),
   });
   const [saving, setSaving] = useState(false);
-  const [feedback, setFeedback] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<{ ok: boolean; text: string } | null>(
+    null
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
     setFeedback(null);
 
-    const parsedSocial: Record<string, string> = {};
-    try {
-      const raw = JSON.parse(form.socialLinksJson || '{}') as Record<
-        string,
-        unknown
-      >;
-      for (const [k, v] of Object.entries(raw)) {
-        if (typeof v === 'string') parsedSocial[k] = v;
-      }
-    } catch {
-      setSaving(false);
-      setFeedback('Social links must be valid JSON.');
-      return;
-    }
+    const socialLinks: Record<string, string> = { ...initialSocial };
+    if (form.whatsappLink.trim()) socialLinks.whatsapp = form.whatsappLink.trim();
+    else delete socialLinks.whatsapp;
+
+    if (form.instagramUrl.trim()) socialLinks.instagram = form.instagramUrl.trim();
+    else delete socialLinks.instagram;
+
+    if (form.facebookUrl.trim()) socialLinks.facebook = form.facebookUrl.trim();
+    else delete socialLinks.facebook;
+
+    if (form.twitterUrl.trim()) socialLinks.twitter = form.twitterUrl.trim();
+    else delete socialLinks.twitter;
 
     const res = await saveSettingsAction({
       siteName: form.siteName,
@@ -63,7 +74,7 @@ export default function SettingsManager({
       email: form.email,
       address: form.address,
       whatsappNumber: form.whatsappNumber,
-      socialLinks: parsedSocial,
+      socialLinks,
       shippingRatesKobo: {
         ikeja_pickup: nairaToKobo(Number(form.ikejaPickupNaira) || 0),
         lagos_delivery: nairaToKobo(Number(form.lagosDeliveryNaira) || 0),
@@ -77,248 +88,287 @@ export default function SettingsManager({
     });
 
     setSaving(false);
-    setFeedback(
-      res.ok ? 'Settings updated.' : res.error || 'Failed to update settings.'
-    );
+    setFeedback({
+      ok: res.ok,
+      text: res.ok
+        ? 'Store settings saved and updated on the storefront.'
+        : res.error || 'Could not update settings.',
+    });
     if (res.ok) router.refresh();
   };
 
-  const inputStyle: React.CSSProperties = {
-    width: '100%',
-    padding: '0.65rem 0.9rem',
-    borderRadius: '8px',
-    background: 'var(--ash-900)',
+  const cardStyle: React.CSSProperties = {
+    background: 'var(--surface)',
     border: '1px solid var(--border)',
-    color: 'var(--heading)',
-    fontSize: '0.875rem',
+    borderRadius: '14px',
+    padding: '1.5rem',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '1rem',
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem', maxWidth: '880px' }}>
       <div>
         <div className="section-label">Configuration</div>
         <h1 className="section-heading" style={{ fontSize: '2rem' }}>
-          Site Settings
+          Store Settings
         </h1>
+        <p style={{ color: 'var(--ash-400)', fontSize: '0.9rem', marginTop: '0.25rem' }}>
+          Update your contact details, delivery fees, and order security limit. Changes take effect immediately.
+        </p>
       </div>
 
       {feedback && (
         <div
           style={{
-            padding: '0.8rem 1rem',
-            borderRadius: '8px',
-            border: '1px solid var(--border-gold)',
+            padding: '0.85rem 1rem',
+            borderRadius: '10px',
+            border: `1px solid ${
+              feedback.ok ? 'var(--border-gold)' : 'rgba(248,113,113,0.45)'
+            }`,
             background: 'var(--surface)',
-            color: 'var(--gold-400)',
+            color: feedback.ok ? 'var(--gold-400)' : 'var(--danger)',
             fontSize: '0.875rem',
           }}
         >
-          {feedback}
+          {feedback.text}
         </div>
       )}
 
       <form
         onSubmit={handleSubmit}
-        style={{
-          background: 'var(--surface)',
-          border: '1px solid var(--border)',
-          borderRadius: '14px',
-          padding: '1.5rem',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '1.25rem',
-          maxWidth: '820px',
-        }}
+        style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}
       >
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-            gap: '1rem',
-          }}
-        >
+        <section style={cardStyle}>
           <div>
-            <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--ash-400)', marginBottom: '0.3rem' }}>
-              Site Name *
-            </label>
-            <input
-              required
-              value={form.siteName}
-              onChange={(e) => setForm({ ...form, siteName: e.target.value })}
-              style={inputStyle}
-            />
+            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.15rem', color: 'var(--heading)' }}>
+              1. Business &amp; WhatsApp Contact
+            </h2>
+            <p style={adminHelperStyle}>
+              Shown in your website header, footer, Contact page, and WhatsApp order links.
+            </p>
           </div>
-          <div>
-            <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--ash-400)', marginBottom: '0.3rem' }}>
-              Tagline
-            </label>
-            <input
-              value={form.tagline}
-              onChange={(e) => setForm({ ...form, tagline: e.target.value })}
-              style={inputStyle}
-            />
-          </div>
-          <div>
-            <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--ash-400)', marginBottom: '0.3rem' }}>
-              Public Phone *
-            </label>
-            <input
-              required
-              value={form.phone}
-              onChange={(e) => setForm({ ...form, phone: e.target.value })}
-              style={inputStyle}
-            />
-          </div>
-          <div>
-            <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--ash-400)', marginBottom: '0.3rem' }}>
-              Public Email *
-            </label>
-            <input
-              required
-              type="email"
-              value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-              style={inputStyle}
-            />
-          </div>
-          <div>
-            <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--ash-400)', marginBottom: '0.3rem' }}>
-              WhatsApp Number *
-            </label>
-            <input
-              required
-              value={form.whatsappNumber}
-              onChange={(e) =>
-                setForm({ ...form, whatsappNumber: e.target.value })
-              }
-              style={inputStyle}
-            />
-          </div>
-          <div>
-            <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--ash-400)', marginBottom: '0.3rem' }}>
-              High-Value Review Threshold (₦ Naira) *
-            </label>
-            <input
-              required
-              type="number"
-              min={0}
-              step="0.01"
-              value={form.highValueThresholdNaira}
-              onChange={(e) =>
-                setForm({ ...form, highValueThresholdNaira: e.target.value })
-              }
-              style={inputStyle}
-            />
-          </div>
-        </div>
 
-        <div>
-          <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--ash-400)', marginBottom: '0.3rem' }}>
-            Store Address *
-          </label>
-          <input
-            required
-            value={form.address}
-            onChange={(e) => setForm({ ...form, address: e.target.value })}
-            style={inputStyle}
-          />
-        </div>
-
-        <div>
-          <h3
-            style={{
-              fontSize: '0.95rem',
-              fontWeight: 700,
-              color: 'var(--heading)',
-              marginBottom: '0.65rem',
-            }}
-          >
-            Shipping Zone Rates (₦ Naira — stored as kobo in Postgres)
-          </h3>
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
               gap: '1rem',
             }}
           >
             <div>
-              <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--ash-400)', marginBottom: '0.3rem' }}>
-                Ikeja Pickup (₦)
-              </label>
+              <label style={adminLabelStyle}>Store Name *</label>
               <input
                 required
-                type="number"
-                min={0}
-                value={form.ikejaPickupNaira}
-                onChange={(e) =>
-                  setForm({ ...form, ikejaPickupNaira: e.target.value })
-                }
-                style={inputStyle}
+                value={form.siteName}
+                onChange={(e) => setForm({ ...form, siteName: e.target.value })}
+                style={adminInputStyle}
               />
             </div>
+
             <div>
-              <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--ash-400)', marginBottom: '0.3rem' }}>
-                Lagos Delivery (₦)
-              </label>
+              <label style={adminLabelStyle}>Store Tagline</label>
               <input
-                required
-                type="number"
-                min={0}
-                value={form.lagosDeliveryNaira}
-                onChange={(e) =>
-                  setForm({ ...form, lagosDeliveryNaira: e.target.value })
-                }
-                style={inputStyle}
+                value={form.tagline}
+                onChange={(e) => setForm({ ...form, tagline: e.target.value })}
+                style={adminInputStyle}
               />
             </div>
+
             <div>
-              <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--ash-400)', marginBottom: '0.3rem' }}>
-                Interstate Delivery (₦)
-              </label>
+              <label style={adminLabelStyle}>Customer Phone Line *</label>
               <input
                 required
-                type="number"
-                min={0}
-                value={form.interstateDeliveryNaira}
+                value={form.phone}
+                onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                style={adminInputStyle}
+              />
+            </div>
+
+            <div>
+              <label style={adminLabelStyle}>Customer Support Email *</label>
+              <input
+                required
+                type="email"
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                style={adminInputStyle}
+              />
+            </div>
+
+            <div>
+              <label style={adminLabelStyle}>WhatsApp Order Number *</label>
+              <input
+                required
+                value={form.whatsappNumber}
+                placeholder="e.g. 2348030000000"
                 onChange={(e) =>
-                  setForm({ ...form, interstateDeliveryNaira: e.target.value })
+                  setForm({ ...form, whatsappNumber: e.target.value })
                 }
-                style={inputStyle}
+                style={adminInputStyle}
+              />
+              <div style={adminHelperStyle}>
+                Include country code without &quot;+&quot; (e.g. 234803...) so WhatsApp checkout links work.
+              </div>
+            </div>
+
+            <div>
+              <label style={adminLabelStyle}>Physical Shop / Pickup Address *</label>
+              <input
+                required
+                value={form.address}
+                onChange={(e) => setForm({ ...form, address: e.target.value })}
+                style={adminInputStyle}
               />
             </div>
           </div>
-        </div>
 
-        <div>
-          <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--ash-400)', marginBottom: '0.3rem' }}>
-            Social Links JSON
-          </label>
-          <textarea
-            rows={4}
-            value={form.socialLinksJson}
-            onChange={(e) =>
-              setForm({ ...form, socialLinksJson: e.target.value })
-            }
-            style={{ ...inputStyle, fontFamily: 'monospace' }}
-          />
-        </div>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+              gap: '1rem',
+              paddingTop: '0.5rem',
+              borderTop: '1px solid var(--border)',
+            }}
+          >
+            <div>
+              <label style={adminLabelStyle}>WhatsApp Direct Link (optional)</label>
+              <input
+                type="url"
+                value={form.whatsappLink}
+                placeholder="https://wa.me/234..."
+                onChange={(e) =>
+                  setForm({ ...form, whatsappLink: e.target.value })
+                }
+                style={adminInputStyle}
+              />
+            </div>
+            <div>
+              <label style={adminLabelStyle}>Instagram Page URL (optional)</label>
+              <input
+                type="url"
+                value={form.instagramUrl}
+                placeholder="https://instagram.com/..."
+                onChange={(e) =>
+                  setForm({ ...form, instagramUrl: e.target.value })
+                }
+                style={adminInputStyle}
+              />
+            </div>
+            <div>
+              <label style={adminLabelStyle}>Facebook Page URL (optional)</label>
+              <input
+                type="url"
+                value={form.facebookUrl}
+                placeholder="https://facebook.com/..."
+                onChange={(e) =>
+                  setForm({ ...form, facebookUrl: e.target.value })
+                }
+                style={adminInputStyle}
+              />
+            </div>
+            <div>
+              <label style={adminLabelStyle}>X / Twitter Profile URL (optional)</label>
+              <input
+                type="url"
+                value={form.twitterUrl}
+                placeholder="https://x.com/..."
+                onChange={(e) =>
+                  setForm({ ...form, twitterUrl: e.target.value })
+                }
+                style={adminInputStyle}
+              />
+            </div>
+          </div>
+        </section>
+
+        <section style={cardStyle}>
+          <div>
+            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.15rem', color: 'var(--heading)' }}>
+              2. Delivery Zone Fees
+            </h2>
+            <p style={adminHelperStyle}>
+              Checkout calculates delivery fees automatically from these rates. Set to 0 for free pickup.
+            </p>
+          </div>
+
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+              gap: '1rem',
+            }}
+          >
+            <NairaPriceField
+              label="Ikeja Store Pickup (₦)"
+              required
+              value={form.ikejaPickupNaira}
+              onChange={(val) => setForm({ ...form, ikejaPickupNaira: val })}
+              helper="Set to 0 for free in-store pickup."
+            />
+
+            <NairaPriceField
+              label="Lagos Dispatch Delivery (₦)"
+              required
+              value={form.lagosDeliveryNaira}
+              onChange={(val) => setForm({ ...form, lagosDeliveryNaira: val })}
+              helper="Same-day or next-day courier across Lagos."
+            />
+
+            <NairaPriceField
+              label="Interstate Delivery (₦)"
+              required
+              value={form.interstateDeliveryNaira}
+              onChange={(val) =>
+                setForm({ ...form, interstateDeliveryNaira: val })
+              }
+              helper="Nationwide waybill / courier outside Lagos."
+            />
+          </div>
+        </section>
+
+        <section style={cardStyle}>
+          <div>
+            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.15rem', color: 'var(--heading)' }}>
+              3. Order Security Threshold
+            </h2>
+            <p style={adminHelperStyle}>
+              Orders equal to or above this amount are automatically flagged as{' '}
+              <strong>High-Value Approval</strong> so a manager can double-check payment and buyer ID before dispatch.
+            </p>
+          </div>
+
+          <div style={{ maxWidth: '340px' }}>
+            <NairaPriceField
+              label="High-Value Review Limit (₦)"
+              required
+              value={form.highValueThresholdNaira}
+              onChange={(val) =>
+                setForm({ ...form, highValueThresholdNaira: val })
+              }
+              helper="Example: ₦500,000 flags orders ₦500,000+ for manual dispatch approval."
+            />
+          </div>
+        </section>
 
         <div>
           <button
             type="submit"
             disabled={saving}
             style={{
-              padding: '0.8rem 1.5rem',
+              padding: '0.85rem 1.65rem',
               borderRadius: '8px',
               border: 'none',
               background: 'var(--gold-400)',
               color: 'var(--on-gold)',
               fontWeight: 700,
               cursor: 'pointer',
+              fontSize: '0.95rem',
             }}
           >
-            {saving ? 'Saving...' : 'Save Settings'}
+            {saving ? 'Saving Settings...' : 'Save All Store Settings'}
           </button>
         </div>
       </form>

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Plus, Trash2 } from 'lucide-react';
 import type { ProductRow } from '@/lib/db/mappers';
 import {
   saveProductAction,
@@ -9,6 +10,14 @@ import {
 } from '@/lib/actions/products';
 import { uploadAdminMedia } from '@/lib/storage/upload';
 import { formatNaira, koboToNaira, nairaToKobo, slugify } from '@/lib/utils';
+import {
+  ImageUploadDropzone,
+  NairaPriceField,
+  SlugFieldToggle,
+  StatusToggle,
+} from '@/components/admin/AdminHelpers';
+
+type SpecRow = { key: string; value: string };
 
 type FormState = {
   id?: string;
@@ -23,7 +32,7 @@ type FormState = {
   compareAtPriceNaira: string;
   stockQuantity: string;
   tagsText: string;
-  specsJson: string;
+  specRows: SpecRow[];
   images: string[];
   isFeatured: boolean;
   isActive: boolean;
@@ -41,13 +50,18 @@ const emptyForm: FormState = {
   compareAtPriceNaira: '',
   stockQuantity: '10',
   tagsText: '',
-  specsJson: '{\n  "RAM": "16GB",\n  "Storage": "512GB SSD"\n}',
+  specRows: [
+    { key: 'Processor', value: '' },
+    { key: 'RAM', value: '' },
+    { key: 'Storage', value: '' },
+  ],
   images: [],
   isFeatured: false,
   isActive: true,
 };
 
 function rowToForm(row: ProductRow): FormState {
+  const entries = Object.entries(row.specs ?? {});
   return {
     id: row.id,
     name: row.name,
@@ -58,14 +72,19 @@ function rowToForm(row: ProductRow): FormState {
     description: row.description ?? '',
     priceNaira: String(koboToNaira(Number(row.price))),
     retailPriceNaira:
-      row.retail_price !== null ? String(koboToNaira(Number(row.retail_price))) : '',
+      row.retail_price !== null
+        ? String(koboToNaira(Number(row.retail_price)))
+        : '',
     compareAtPriceNaira:
       row.compare_at_price !== null
         ? String(koboToNaira(Number(row.compare_at_price)))
         : '',
     stockQuantity: String(row.stock_quantity),
     tagsText: (row.tags ?? []).join(', '),
-    specsJson: JSON.stringify(row.specs ?? {}, null, 2),
+    specRows:
+      entries.length > 0
+        ? entries.map(([key, val]) => ({ key, value: String(val ?? '') }))
+        : [{ key: '', value: '' }],
     images: Array.isArray(row.images) ? row.images : [],
     isFeatured: row.is_featured,
     isActive: row.is_active,
@@ -87,15 +106,13 @@ export default function ProductsManager({
     text: string;
   } | null>(null);
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const handleFileUpload = async (file: File) => {
     setUploading(true);
     setFeedback(null);
     try {
       const publicUrl = await uploadAdminMedia(file, 'product-media');
       setForm((prev) => ({ ...prev, images: [...prev.images, publicUrl] }));
-      setFeedback({ type: 'ok', text: 'Image uploaded to product-media.' });
+      setFeedback({ type: 'ok', text: 'Photo uploaded successfully.' });
     } catch (err) {
       setFeedback({
         type: 'err',
@@ -103,7 +120,6 @@ export default function ProductsManager({
       });
     } finally {
       setUploading(false);
-      e.target.value = '';
     }
   };
 
@@ -113,21 +129,12 @@ export default function ProductsManager({
     setFeedback(null);
 
     const parsedSpecs: Record<string, string> = {};
-    try {
-      const raw = JSON.parse(form.specsJson || '{}') as Record<string, unknown>;
-      if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
-        throw new Error('Specs must be a JSON object.');
+    for (const row of form.specRows) {
+      const k = row.key.trim();
+      const v = row.value.trim();
+      if (k && v) {
+        parsedSpecs[k] = v;
       }
-      for (const [k, v] of Object.entries(raw)) {
-        parsedSpecs[k] = String(v);
-      }
-    } catch (err) {
-      setSaving(false);
-      setFeedback({
-        type: 'err',
-        text: err instanceof Error ? err.message : 'Invalid specs JSON.',
-      });
-      return;
     }
 
     const priceNum = Number(form.priceNaira);
@@ -140,7 +147,7 @@ export default function ProductsManager({
 
     if (!Number.isFinite(priceNum) || priceNum < 0) {
       setSaving(false);
-      setFeedback({ type: 'err', text: 'Enter a valid price in Naira.' });
+      setFeedback({ type: 'err', text: 'Enter a valid selling price in Naira.' });
       return;
     }
 
@@ -178,14 +185,16 @@ export default function ProductsManager({
 
     setFeedback({
       type: 'ok',
-      text: form.id ? 'Product updated.' : 'Product created.',
+      text: form.id
+        ? `"${form.name}" updated on the store.`
+        : `"${form.name}" added to your store.`,
     });
     setForm(emptyForm);
     router.refresh();
   };
 
   const handleDelete = async (id: string, name: string) => {
-    if (!confirm(`Delete "${name}"?`)) return;
+    if (!confirm(`Delete "${name}" permanently?`)) return;
     setFeedback(null);
     const res = await deleteProductAction(id);
     if (!res.ok) {
@@ -193,18 +202,26 @@ export default function ProductsManager({
       return;
     }
     if (form.id === id) setForm(emptyForm);
-    setFeedback({ type: 'ok', text: `Deleted ${name}.` });
+    setFeedback({ type: 'ok', text: `Deleted "${name}".` });
     router.refresh();
   };
 
   const inputStyle: React.CSSProperties = {
     width: '100%',
-    padding: '0.6rem 0.85rem',
+    padding: '0.62rem 0.85rem',
     borderRadius: '8px',
     background: 'var(--ash-900)',
     border: '1px solid var(--border)',
     color: 'var(--heading)',
     fontSize: '0.875rem',
+  };
+
+  const labelStyle: React.CSSProperties = {
+    display: 'block',
+    fontSize: '0.8rem',
+    fontWeight: 600,
+    color: 'var(--ash-300)',
+    marginBottom: '0.3rem',
   };
 
   return (
@@ -219,10 +236,14 @@ export default function ProductsManager({
         }}
       >
         <div>
-          <div className="section-label">Catalog</div>
+          <div className="section-label">Store Catalog</div>
           <h1 className="section-heading" style={{ fontSize: '2rem' }}>
             Products ({initialProducts.length})
           </h1>
+          <p style={{ color: 'var(--ash-400)', fontSize: '0.875rem', marginTop: '0.25rem' }}>
+            Add new laptops, desktops, or smart gadgets, adjust prices, or
+            update available stock.
+          </p>
         </div>
         {form.id && (
           <button
@@ -232,31 +253,36 @@ export default function ProductsManager({
               setFeedback(null);
             }}
             style={{
-              padding: '0.55rem 1rem',
+              padding: '0.6rem 1rem',
               borderRadius: '8px',
-              border: '1px solid var(--border)',
-              background: 'var(--surface)',
-              color: 'var(--heading)',
+              border: '1px solid var(--border-gold)',
+              background: 'rgba(245, 200, 66, 0.1)',
+              color: 'var(--gold-400)',
+              fontWeight: 600,
               cursor: 'pointer',
             }}
           >
-            + New Product
+            + Add New Product
           </button>
         )}
       </div>
 
       {feedback && (
         <div
+          role="status"
           style={{
             padding: '0.85rem 1rem',
-            borderRadius: '8px',
+            borderRadius: '10px',
             border: `1px solid ${
-              feedback.type === 'ok' ? 'var(--cyan-400)' : 'var(--danger)'
+              feedback.type === 'ok' ? 'rgba(34,197,94,0.5)' : 'var(--danger)'
             }`,
-            color:
-              feedback.type === 'ok' ? 'var(--cyan-400)' : 'var(--danger)',
-            background: 'var(--surface)',
+            color: feedback.type === 'ok' ? '#4ade80' : 'var(--danger)',
+            background:
+              feedback.type === 'ok'
+                ? 'rgba(34,197,94,0.08)'
+                : 'rgba(248,113,113,0.08)',
             fontSize: '0.875rem',
+            fontWeight: 600,
           }}
         >
           {feedback.text}
@@ -272,7 +298,7 @@ export default function ProductsManager({
           padding: '1.5rem',
           display: 'flex',
           flexDirection: 'column',
-          gap: '1rem',
+          gap: '1.25rem',
         }}
       >
         <h2
@@ -282,23 +308,22 @@ export default function ProductsManager({
             color: 'var(--heading)',
           }}
         >
-          {form.id ? `Editing: ${form.name}` : 'Add New Product'}
+          {form.id ? `Editing: ${form.name}` : 'Add a New Product'}
         </h2>
 
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))',
             gap: '1rem',
           }}
         >
-          <div>
-            <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--ash-400)', marginBottom: '0.3rem' }}>
-              Product Name *
-            </label>
+          <div style={{ gridColumn: 'span 1' }}>
+            <label style={labelStyle}>Product Name *</label>
             <input
               required
               value={form.name}
+              placeholder="e.g. HP EliteBook 840 G9"
               onChange={(e) =>
                 setForm((prev) => ({
                   ...prev,
@@ -308,22 +333,15 @@ export default function ProductsManager({
               }
               style={inputStyle}
             />
-          </div>
-          <div>
-            <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--ash-400)', marginBottom: '0.3rem' }}>
-              Slug *
-            </label>
-            <input
-              required
-              value={form.slug}
-              onChange={(e) => setForm({ ...form, slug: e.target.value })}
-              style={inputStyle}
+            <SlugFieldToggle
+              slug={form.slug}
+              onChange={(slug) => setForm({ ...form, slug })}
+              prefix="/products/"
             />
           </div>
+
           <div>
-            <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--ash-400)', marginBottom: '0.3rem' }}>
-              Category *
-            </label>
+            <label style={labelStyle}>Store Category *</label>
             <select
               value={form.category}
               onChange={(e) => setForm({ ...form, category: e.target.value })}
@@ -334,30 +352,9 @@ export default function ProductsManager({
               <option value="smart-gadgets">Smart Gadgets</option>
             </select>
           </div>
+
           <div>
-            <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--ash-400)', marginBottom: '0.3rem' }}>
-              Brand
-            </label>
-            <input
-              value={form.brand}
-              onChange={(e) => setForm({ ...form, brand: e.target.value })}
-              style={inputStyle}
-            />
-          </div>
-          <div>
-            <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--ash-400)', marginBottom: '0.3rem' }}>
-              Model
-            </label>
-            <input
-              value={form.model}
-              onChange={(e) => setForm({ ...form, model: e.target.value })}
-              style={inputStyle}
-            />
-          </div>
-          <div>
-            <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--ash-400)', marginBottom: '0.3rem' }}>
-              Stock Quantity *
-            </label>
+            <label style={labelStyle}>Stock Quantity *</label>
             <input
               required
               type="number"
@@ -368,60 +365,89 @@ export default function ProductsManager({
               }
               style={inputStyle}
             />
+            <p style={{ fontSize: '0.74rem', color: 'var(--ash-400)', marginTop: '0.3rem' }}>
+              Units ready to sell. Set to 0 when sold out.
+            </p>
           </div>
+
           <div>
-            <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--ash-400)', marginBottom: '0.3rem' }}>
-              Price (₦ Naira) *
-            </label>
+            <label style={labelStyle}>Brand</label>
             <input
-              required
-              type="number"
-              step="0.01"
-              min={0}
-              value={form.priceNaira}
-              onChange={(e) => setForm({ ...form, priceNaira: e.target.value })}
+              value={form.brand}
+              placeholder="e.g. HP, Dell, Apple"
+              onChange={(e) => setForm({ ...form, brand: e.target.value })}
               style={inputStyle}
             />
           </div>
+
           <div>
-            <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--ash-400)', marginBottom: '0.3rem' }}>
-              Retail / Wholesale Price (₦, optional)
-            </label>
+            <label style={labelStyle}>Model Number</label>
             <input
-              type="number"
-              step="0.01"
-              min={1}
-              value={form.retailPriceNaira}
-              onChange={(e) =>
-                setForm({ ...form, retailPriceNaira: e.target.value })
-              }
+              value={form.model}
+              placeholder="e.g. EliteBook 840 G9"
+              onChange={(e) => setForm({ ...form, model: e.target.value })}
               style={inputStyle}
             />
           </div>
+
           <div>
-            <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--ash-400)', marginBottom: '0.3rem' }}>
-              Compare-at Strike Price (₦, optional)
-            </label>
+            <label style={labelStyle}>Search Keywords (optional)</label>
             <input
-              type="number"
-              step="0.01"
-              min={0}
-              value={form.compareAtPriceNaira}
-              onChange={(e) =>
-                setForm({ ...form, compareAtPriceNaira: e.target.value })
-              }
+              value={form.tagsText}
+              onChange={(e) => setForm({ ...form, tagsText: e.target.value })}
+              placeholder="e.g. laptops, hp, business"
               style={inputStyle}
             />
+            <p style={{ fontSize: '0.74rem', color: 'var(--ash-400)', marginTop: '0.3rem' }}>
+              Separate words with commas.
+            </p>
           </div>
         </div>
 
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))',
+            gap: '1rem',
+            padding: '1rem',
+            borderRadius: '10px',
+            background: 'rgba(245, 200, 66, 0.04)',
+            border: '1px solid var(--border)',
+          }}
+        >
+          <NairaPriceField
+            label="Selling Price (₦)"
+            required
+            value={form.priceNaira}
+            onChange={(val) => setForm({ ...form, priceNaira: val })}
+            helper="Regular price paid by customers."
+          />
+
+          <NairaPriceField
+            label="Bulk / Reseller Price (₦, 10+ units)"
+            min={1}
+            value={form.retailPriceNaira}
+            onChange={(val) => setForm({ ...form, retailPriceNaira: val })}
+            placeholder="Optional"
+            helper="Optional lower unit price when a buyer orders 10 or more."
+          />
+
+          <NairaPriceField
+            label="Original / Strikethrough Price (₦)"
+            min={0}
+            value={form.compareAtPriceNaira}
+            onChange={(val) => setForm({ ...form, compareAtPriceNaira: val })}
+            placeholder="Optional"
+            helper="Optional. Shows a discount badge if higher than the selling price."
+          />
+        </div>
+
         <div>
-          <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--ash-400)', marginBottom: '0.3rem' }}>
-            Description
-          </label>
+          <label style={labelStyle}>Product Description</label>
           <textarea
             rows={3}
             value={form.description}
+            placeholder="Describe condition, warranty, battery life, and key highlights..."
             onChange={(e) => setForm({ ...form, description: e.target.value })}
             style={inputStyle}
           />
@@ -429,73 +455,159 @@ export default function ProductsManager({
 
         <div
           style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-            gap: '1rem',
+            padding: '1rem',
+            borderRadius: '10px',
+            background: 'var(--ash-900)',
+            border: '1px solid var(--border)',
           }}
         >
-          <div>
-            <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--ash-400)', marginBottom: '0.3rem' }}>
-              Specs JSON
-            </label>
-            <textarea
-              rows={4}
-              value={form.specsJson}
-              onChange={(e) => setForm({ ...form, specsJson: e.target.value })}
-              style={{ ...inputStyle, fontFamily: 'monospace' }}
-            />
-          </div>
-          <div>
-            <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--ash-400)', marginBottom: '0.3rem' }}>
-              Tags (comma separated)
-            </label>
-            <input
-              value={form.tagsText}
-              onChange={(e) => setForm({ ...form, tagsText: e.target.value })}
-              placeholder="laptops, hp, business"
-              style={inputStyle}
-            />
-
-            <div style={{ marginTop: '1rem', display: 'flex', gap: '1.5rem' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', cursor: 'pointer', fontSize: '0.875rem' }}>
-                <input
-                  type="checkbox"
-                  checked={form.isFeatured}
-                  onChange={(e) =>
-                    setForm({ ...form, isFeatured: e.target.checked })
-                  }
-                />
-                Featured
-              </label>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', cursor: 'pointer', fontSize: '0.875rem' }}>
-                <input
-                  type="checkbox"
-                  checked={form.isActive}
-                  onChange={(e) =>
-                    setForm({ ...form, isActive: e.target.checked })
-                  }
-                />
-                Active (Visible)
-              </label>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '0.75rem',
+              flexWrap: 'wrap',
+              gap: '0.5rem',
+            }}
+          >
+            <div>
+              <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--heading)' }}>
+                Product Specifications
+              </div>
+              <div style={{ fontSize: '0.74rem', color: 'var(--ash-400)' }}>
+                Shown on product cards and the product details table (e.g.
+                Processor, RAM, Storage).
+              </div>
             </div>
+            <button
+              type="button"
+              onClick={() =>
+                setForm((prev) => ({
+                  ...prev,
+                  specRows: [...prev.specRows, { key: '', value: '' }],
+                }))
+              }
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.35rem',
+                padding: '0.45rem 0.85rem',
+                borderRadius: '8px',
+                border: '1px solid var(--border-gold)',
+                background: 'rgba(245, 200, 66, 0.1)',
+                color: 'var(--gold-400)',
+                fontSize: '0.8rem',
+                fontWeight: 600,
+                cursor: 'pointer',
+              }}
+            >
+              <Plus size={14} /> Add Specification
+            </button>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem' }}>
+            {form.specRows.map((row, idx) => (
+              <div
+                key={idx}
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1.2fr auto',
+                  gap: '0.5rem',
+                  alignItems: 'center',
+                }}
+              >
+                <input
+                  value={row.key}
+                  placeholder="Label (e.g. Processor)"
+                  onChange={(e) => {
+                    const next = [...form.specRows];
+                    next[idx] = { ...next[idx], key: e.target.value };
+                    setForm({ ...form, specRows: next });
+                  }}
+                  style={{ ...inputStyle, background: 'var(--surface)' }}
+                />
+                <input
+                  value={row.value}
+                  placeholder="Value (e.g. AMD Ryzen 9)"
+                  onChange={(e) => {
+                    const next = [...form.specRows];
+                    next[idx] = { ...next[idx], value: e.target.value };
+                    setForm({ ...form, specRows: next });
+                  }}
+                  style={{ ...inputStyle, background: 'var(--surface)' }}
+                />
+                <button
+                  type="button"
+                  aria-label="Remove specification"
+                  onClick={() =>
+                    setForm((prev) => ({
+                      ...prev,
+                      specRows:
+                        prev.specRows.length > 1
+                          ? prev.specRows.filter((_, i) => i !== idx)
+                          : [{ key: '', value: '' }],
+                    }))
+                  }
+                  style={{
+                    padding: '0.55rem',
+                    borderRadius: '8px',
+                    border: '1px solid rgba(248,113,113,0.35)',
+                    background: 'transparent',
+                    color: 'var(--danger)',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <Trash2 size={15} />
+                </button>
+              </div>
+            ))}
           </div>
         </div>
 
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+            gap: '0.85rem',
+          }}
+        >
+          <StatusToggle
+            label="Visible on Storefront"
+            checked={form.isActive}
+            onChange={(val) => setForm({ ...form, isActive: val })}
+            onText="Live"
+            offText="Hidden"
+            helper="Turn off to hide this item without deleting it."
+          />
+          <StatusToggle
+            label="Feature on Home Page"
+            checked={form.isFeatured}
+            onChange={(val) => setForm({ ...form, isFeatured: val })}
+            onText="Featured"
+            offText="Standard"
+            helper="Display this product in the Home Page Featured section."
+          />
+        </div>
+
         <div>
-          <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--ash-400)', marginBottom: '0.4rem' }}>
-            Product Images (Upload JPEG/PNG/WebP ≤ 5MB or paste URL)
-          </label>
-          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
-            <input
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              onChange={handleFileUpload}
-              disabled={uploading}
-              style={{ fontSize: '0.825rem' }}
+          <label style={labelStyle}>Product Photos</label>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+              gap: '0.85rem',
+              alignItems: 'center',
+            }}
+          >
+            <ImageUploadDropzone
+              uploading={uploading}
+              onFileSelected={handleFileUpload}
+              label="Upload product photo"
             />
-            <div style={{ display: 'flex', gap: '0.5rem', flex: 1, minWidth: '240px' }}>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
               <input
-                placeholder="Or paste image URL..."
+                placeholder="Or paste an image URL..."
                 value={newImageUrl}
                 onChange={(e) => setNewImageUrl(e.target.value)}
                 style={inputStyle}
@@ -518,34 +630,43 @@ export default function ProductsManager({
                   color: 'var(--heading)',
                   cursor: 'pointer',
                   whiteSpace: 'nowrap',
+                  fontSize: '0.825rem',
                 }}
               >
-                Add URL
+                Add Link
               </button>
             </div>
           </div>
 
           {form.images.length > 0 && (
-            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: '0.75rem' }}>
+            <div
+              style={{
+                display: 'flex',
+                gap: '0.75rem',
+                flexWrap: 'wrap',
+                marginTop: '0.85rem',
+              }}
+            >
               {form.images.map((url, idx) => (
                 <div
                   key={`${url}-${idx}`}
                   style={{
                     position: 'relative',
-                    width: '80px',
-                    height: '80px',
-                    borderRadius: '8px',
+                    width: '88px',
+                    height: '88px',
+                    borderRadius: '10px',
                     overflow: 'hidden',
                     border: '1px solid var(--border)',
                   }}
                 >
                   <img
                     src={url}
-                    alt=""
+                    alt={`Product preview ${idx + 1}`}
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   />
                   <button
                     type="button"
+                    aria-label="Remove photo"
                     onClick={() =>
                       setForm((prev) => ({
                         ...prev,
@@ -554,14 +675,14 @@ export default function ProductsManager({
                     }
                     style={{
                       position: 'absolute',
-                      top: '2px',
-                      right: '2px',
-                      background: 'rgba(0,0,0,0.75)',
+                      top: '4px',
+                      right: '4px',
+                      background: 'rgba(0,0,0,0.8)',
                       color: '#fff',
                       border: 'none',
-                      borderRadius: '4px',
-                      padding: '0 5px',
-                      fontSize: '0.7rem',
+                      borderRadius: '6px',
+                      padding: '2px 6px',
+                      fontSize: '0.72rem',
                       cursor: 'pointer',
                     }}
                   >
@@ -578,7 +699,7 @@ export default function ProductsManager({
             type="submit"
             disabled={saving || uploading}
             style={{
-              padding: '0.75rem 1.5rem',
+              padding: '0.8rem 1.6rem',
               borderRadius: '8px',
               border: 'none',
               background: 'var(--gold-400)',
@@ -590,8 +711,8 @@ export default function ProductsManager({
             {saving
               ? 'Saving...'
               : form.id
-                ? 'Save Changes'
-                : 'Create Product'}
+                ? 'Save Product Changes'
+                : 'Save Product'}
           </button>
         </div>
       </form>
@@ -622,8 +743,8 @@ export default function ProductsManager({
             >
               <th style={{ padding: '0.6rem' }}>Product</th>
               <th style={{ padding: '0.6rem' }}>Category</th>
-              <th style={{ padding: '0.6rem' }}>Price</th>
-              <th style={{ padding: '0.6rem' }}>Retail</th>
+              <th style={{ padding: '0.6rem' }}>Selling Price</th>
+              <th style={{ padding: '0.6rem' }}>Bulk Price (10+)</th>
               <th style={{ padding: '0.6rem' }}>Stock</th>
               <th style={{ padding: '0.6rem' }}>Status</th>
               <th style={{ padding: '0.6rem' }}>Actions</th>
@@ -636,21 +757,66 @@ export default function ProductsManager({
                   <div style={{ fontWeight: 600, color: 'var(--heading)' }}>
                     {p.name}
                   </div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--ash-400)' }}>
-                    {p.slug}
+                  <div style={{ fontSize: '0.74rem', color: 'var(--ash-400)' }}>
+                    /products/{p.slug}
                   </div>
                 </td>
-                <td style={{ padding: '0.65rem' }}>{p.category}</td>
-                <td style={{ padding: '0.65rem', color: 'var(--gold-400)' }}>
+                <td style={{ padding: '0.65rem', textTransform: 'capitalize' }}>
+                  {p.category.replace('-', ' ')}
+                </td>
+                <td
+                  style={{
+                    padding: '0.65rem',
+                    color: 'var(--gold-400)',
+                    fontWeight: 600,
+                  }}
+                >
                   {formatNaira(Number(p.price))}
                 </td>
                 <td style={{ padding: '0.65rem' }}>
                   {p.retail_price ? formatNaira(Number(p.retail_price)) : '—'}
                 </td>
-                <td style={{ padding: '0.65rem' }}>{p.stock_quantity}</td>
                 <td style={{ padding: '0.65rem' }}>
-                  {p.is_active ? 'Active' : 'Hidden'}
-                  {p.is_featured ? ' · Featured' : ''}
+                  <span
+                    style={{
+                      color:
+                        p.stock_quantity === 0
+                          ? 'var(--danger)'
+                          : p.stock_quantity < 5
+                            ? 'var(--gold-400)'
+                            : 'var(--heading)',
+                      fontWeight: 600,
+                    }}
+                  >
+                    {p.stock_quantity}
+                  </span>
+                </td>
+                <td style={{ padding: '0.65rem' }}>
+                  <span
+                    style={{
+                      padding: '0.2rem 0.55rem',
+                      borderRadius: '999px',
+                      fontSize: '0.72rem',
+                      fontWeight: 700,
+                      background: p.is_active
+                        ? 'rgba(34,197,94,0.16)'
+                        : 'rgba(157,176,210,0.14)',
+                      color: p.is_active ? '#4ade80' : 'var(--ash-400)',
+                    }}
+                  >
+                    {p.is_active ? 'Live' : 'Hidden'}
+                  </span>
+                  {p.is_featured && (
+                    <span
+                      style={{
+                        marginLeft: '0.35rem',
+                        fontSize: '0.72rem',
+                        color: 'var(--gold-400)',
+                      }}
+                    >
+                      ★ Featured
+                    </span>
+                  )}
                 </td>
                 <td style={{ padding: '0.65rem', whiteSpace: 'nowrap' }}>
                   <button
@@ -661,12 +827,13 @@ export default function ProductsManager({
                     }}
                     style={{
                       marginRight: '0.5rem',
-                      padding: '0.35rem 0.7rem',
+                      padding: '0.35rem 0.75rem',
                       borderRadius: '6px',
                       border: '1px solid var(--border)',
                       background: 'transparent',
                       color: 'var(--gold-400)',
                       cursor: 'pointer',
+                      fontWeight: 600,
                     }}
                   >
                     Edit
@@ -675,7 +842,7 @@ export default function ProductsManager({
                     type="button"
                     onClick={() => handleDelete(p.id, p.name)}
                     style={{
-                      padding: '0.35rem 0.7rem',
+                      padding: '0.35rem 0.75rem',
                       borderRadius: '6px',
                       border: '1px solid rgba(248,113,113,0.35)',
                       background: 'transparent',

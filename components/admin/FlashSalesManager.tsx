@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Plus, Trash2 } from 'lucide-react';
 import type {
   FlashSaleRow,
   ProductRow,
@@ -14,6 +15,11 @@ import {
 } from '@/lib/actions/flash-sales';
 import { uploadAdminMedia } from '@/lib/storage/upload';
 import { formatNaira, koboToNaira, nairaToKobo } from '@/lib/utils';
+import {
+  ImageUploadDropzone,
+  NairaPriceField,
+  StatusToggle,
+} from '@/components/admin/AdminHelpers';
 
 function toLocalDatetimeValue(iso?: string): string {
   if (!iso) return '';
@@ -44,7 +50,10 @@ export default function FlashSalesManager({
     endsAt: '',
     isActive: true,
   });
-  const [saleFeedback, setSaleFeedback] = useState<string | null>(null);
+  const [saleFeedback, setSaleFeedback] = useState<{
+    ok: boolean;
+    text: string;
+  } | null>(null);
   const [savingSale, setSavingSale] = useState(false);
 
   const meta = (initialBanner?.metadata ?? {}) as {
@@ -57,28 +66,32 @@ export default function FlashSalesManager({
     headline: initialBanner?.headline ?? "Lagos' Premier Tech Store.",
     subheadline:
       initialBanner?.subheadline ??
-      "Laptops, desktops, smart gadgets, and expert repairs — all under one roof at Ikeja, Lagos.",
+      'Laptops, desktops, smart gadgets, and expert repairs — all under one roof at Ikeja, Lagos.',
     ctaText: initialBanner?.cta_text ?? 'Shop Laptops',
     ctaLink: initialBanner?.cta_link ?? '/products',
     label: meta.label ?? 'Smart Tech. Sharp Deals.',
     secondaryCtaText: meta.secondary_cta?.text ?? 'Our Services',
     secondaryCtaLink: meta.secondary_cta?.link ?? '/services',
-    mediaUrlsText: (initialBanner?.media_urls ?? []).join('\n'),
-    statsJson: JSON.stringify(
-      meta.stats ?? [
-        { value: '500+', label: 'Products Sold' },
-        { value: '4.9★', label: 'Customer Rating' },
-        { value: '24hr', label: 'Repair Turnaround' },
-      ],
-      null,
-      2
-    ),
+    mediaUrls: initialBanner?.media_urls ?? [],
+    stats:
+      meta.stats && meta.stats.length > 0
+        ? meta.stats
+        : [
+            { value: '500+', label: 'Products Sold' },
+            { value: '4.9★', label: 'Customer Rating' },
+            { value: '24hr', label: 'Repair Turnaround' },
+          ],
     isActive: initialBanner?.is_active ?? true,
   });
-  const [bannerFeedback, setBannerFeedback] = useState<string | null>(null);
+  const [newBannerImageUrl, setNewBannerImageUrl] = useState('');
+  const [uploadingBanner, setUploadingBanner] = useState(false);
+  const [bannerFeedback, setBannerFeedback] = useState<{
+    ok: boolean;
+    text: string;
+  } | null>(null);
   const [savingBanner, setSavingBanner] = useState(false);
 
-  const productNameById = new Map(products.map((p) => [p.id, p]));
+  const productById = new Map(products.map((p) => [p.id, p]));
 
   const handleSaveSale = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,7 +101,7 @@ export default function FlashSalesManager({
     const priceNum = Number(saleForm.salePriceNaira);
     if (!Number.isFinite(priceNum) || priceNum <= 0) {
       setSavingSale(false);
-      setSaleFeedback('Enter a valid sale price in Naira.');
+      setSaleFeedback({ ok: false, text: 'Enter a valid deal price in Naira.' });
       return;
     }
 
@@ -104,10 +117,13 @@ export default function FlashSalesManager({
 
     setSavingSale(false);
     if (!res.ok) {
-      setSaleFeedback(res.error || 'Could not save flash sale.');
+      setSaleFeedback({
+        ok: false,
+        text: res.error || 'Could not save flash deal.',
+      });
       return;
     }
-    setSaleFeedback('Flash sale saved.');
+    setSaleFeedback({ ok: true, text: 'Flash deal saved.' });
     setSaleForm({
       id: '',
       title: '',
@@ -121,35 +137,32 @@ export default function FlashSalesManager({
   };
 
   const handleDeleteSale = async (id: string) => {
-    if (!confirm('Delete this flash sale?')) return;
+    if (!confirm('Delete this flash deal?')) return;
     const res = await deleteFlashSaleAction(id);
     if (!res.ok) {
-      setSaleFeedback(res.error || 'Delete failed.');
+      setSaleFeedback({ ok: false, text: res.error || 'Delete failed.' });
       return;
     }
     router.refresh();
   };
 
-  const handleUploadBannerImage = async (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const handleUploadBannerImage = async (file: File) => {
+    setUploadingBanner(true);
+    setBannerFeedback(null);
     try {
       const url = await uploadAdminMedia(file, 'product-media');
       setBannerForm((prev) => ({
         ...prev,
-        mediaUrlsText: [prev.mediaUrlsText.trim(), url]
-          .filter(Boolean)
-          .join('\n'),
+        mediaUrls: [...prev.mediaUrls, url],
       }));
-      setBannerFeedback('Uploaded hero image.');
+      setBannerFeedback({ ok: true, text: 'Hero photo uploaded.' });
     } catch (err) {
-      setBannerFeedback(
-        err instanceof Error ? err.message : 'Hero image upload failed.'
-      );
+      setBannerFeedback({
+        ok: false,
+        text: err instanceof Error ? err.message : 'Hero photo upload failed.',
+      });
     } finally {
-      e.target.value = '';
+      setUploadingBanner(false);
     }
   };
 
@@ -158,18 +171,9 @@ export default function FlashSalesManager({
     setSavingBanner(true);
     setBannerFeedback(null);
 
-    let parsedStats: Array<{ value: string; label: string }> = [];
-    try {
-      const raw = JSON.parse(bannerForm.statsJson || '[]');
-      if (!Array.isArray(raw)) throw new Error('Stats must be a JSON array.');
-      parsedStats = raw;
-    } catch (err) {
-      setSavingBanner(false);
-      setBannerFeedback(
-        err instanceof Error ? err.message : 'Invalid stats JSON.'
-      );
-      return;
-    }
+    const cleanStats = bannerForm.stats
+      .map((s) => ({ value: s.value.trim(), label: s.label.trim() }))
+      .filter((s) => s.value && s.label);
 
     const res = await saveHomeBannerAction({
       slot: 'home_hero',
@@ -180,24 +184,24 @@ export default function FlashSalesManager({
       label: bannerForm.label,
       secondaryCtaText: bannerForm.secondaryCtaText,
       secondaryCtaLink: bannerForm.secondaryCtaLink,
-      mediaUrls: bannerForm.mediaUrlsText
-        .split('\n')
-        .map((s) => s.trim())
-        .filter(Boolean),
-      stats: parsedStats,
+      mediaUrls: bannerForm.mediaUrls,
+      stats: cleanStats,
       isActive: bannerForm.isActive,
     });
 
     setSavingBanner(false);
-    setBannerFeedback(
-      res.ok ? 'Home hero banner updated.' : res.error || 'Failed to save.'
-    );
+    setBannerFeedback({
+      ok: res.ok,
+      text: res.ok
+        ? 'Home page hero banner updated.'
+        : res.error || 'Failed to save hero banner.',
+    });
     if (res.ok) router.refresh();
   };
 
   const inputStyle: React.CSSProperties = {
     width: '100%',
-    padding: '0.6rem 0.85rem',
+    padding: '0.62rem 0.85rem',
     borderRadius: '8px',
     background: 'var(--ash-900)',
     border: '1px solid var(--border)',
@@ -205,13 +209,25 @@ export default function FlashSalesManager({
     fontSize: '0.875rem',
   };
 
+  const labelStyle: React.CSSProperties = {
+    display: 'block',
+    fontSize: '0.8rem',
+    fontWeight: 600,
+    color: 'var(--ash-300)',
+    marginBottom: '0.3rem',
+  };
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '2.25rem' }}>
       <div>
         <div className="section-label">Promotions</div>
         <h1 className="section-heading" style={{ fontSize: '2rem' }}>
           Flash Sales & Home Hero
         </h1>
+        <p style={{ color: 'var(--ash-400)', fontSize: '0.875rem', marginTop: '0.25rem' }}>
+          Launch limited-time product discounts and update the main banner shown
+          at the top of your home page.
+        </p>
       </div>
 
       <section
@@ -225,20 +241,37 @@ export default function FlashSalesManager({
           gap: '1.25rem',
         }}
       >
-        <h2
-          style={{
-            fontFamily: 'var(--font-display)',
-            fontSize: '1.25rem',
-            color: 'var(--heading)',
-          }}
-        >
-          {saleForm.id ? 'Edit Flash Sale' : 'Create Flash Sale'}
-        </h2>
+        <div>
+          <h2
+            style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: '1.25rem',
+              color: 'var(--heading)',
+            }}
+          >
+            {saleForm.id ? 'Edit Flash Deal' : 'Create a Flash Deal'}
+          </h2>
+          <p style={{ fontSize: '0.8rem', color: 'var(--ash-400)', marginTop: '0.2rem' }}>
+            Flash deals temporarily lower a product&apos;s price and display a
+            countdown timer on the home page.
+          </p>
+        </div>
 
         {saleFeedback && (
-          <p style={{ color: 'var(--gold-400)', fontSize: '0.875rem' }}>
-            {saleFeedback}
-          </p>
+          <div
+            style={{
+              padding: '0.75rem 1rem',
+              borderRadius: '8px',
+              border: `1px solid ${
+                saleFeedback.ok ? 'rgba(34,197,94,0.45)' : 'var(--danger)'
+              }`,
+              color: saleFeedback.ok ? '#4ade80' : 'var(--danger)',
+              fontSize: '0.875rem',
+              fontWeight: 600,
+            }}
+          >
+            {saleFeedback.text}
+          </div>
         )}
 
         <form
@@ -253,9 +286,7 @@ export default function FlashSalesManager({
             }}
           >
             <div>
-              <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--ash-400)', marginBottom: '0.3rem' }}>
-                Sale Title *
-              </label>
+              <label style={labelStyle}>Deal Title *</label>
               <input
                 required
                 value={saleForm.title}
@@ -266,10 +297,9 @@ export default function FlashSalesManager({
                 style={inputStyle}
               />
             </div>
+
             <div>
-              <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--ash-400)', marginBottom: '0.3rem' }}>
-                Product *
-              </label>
+              <label style={labelStyle}>Product *</label>
               <select
                 value={saleForm.productId}
                 onChange={(e) =>
@@ -284,26 +314,20 @@ export default function FlashSalesManager({
                 ))}
               </select>
             </div>
+
+            <NairaPriceField
+              label="Flash Deal Price (₦)"
+              required
+              min={1}
+              value={saleForm.salePriceNaira}
+              onChange={(val) =>
+                setSaleForm({ ...saleForm, salePriceNaira: val })
+              }
+              helper="Must be lower than the product's regular selling price."
+            />
+
             <div>
-              <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--ash-400)', marginBottom: '0.3rem' }}>
-                Sale Price (₦ Naira, must be &lt; product price) *
-              </label>
-              <input
-                required
-                type="number"
-                step="0.01"
-                min={1}
-                value={saleForm.salePriceNaira}
-                onChange={(e) =>
-                  setSaleForm({ ...saleForm, salePriceNaira: e.target.value })
-                }
-                style={inputStyle}
-              />
-            </div>
-            <div>
-              <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--ash-400)', marginBottom: '0.3rem' }}>
-                Starts At *
-              </label>
+              <label style={labelStyle}>Starts At *</label>
               <input
                 required
                 type="datetime-local"
@@ -314,10 +338,9 @@ export default function FlashSalesManager({
                 style={inputStyle}
               />
             </div>
+
             <div>
-              <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--ash-400)', marginBottom: '0.3rem' }}>
-                Ends At *
-              </label>
+              <label style={labelStyle}>Ends At *</label>
               <input
                 required
                 type="datetime-local"
@@ -328,26 +351,23 @@ export default function FlashSalesManager({
                 style={inputStyle}
               />
             </div>
-            <div style={{ display: 'flex', alignItems: 'flex-end' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', paddingBottom: '0.5rem' }}>
-                <input
-                  type="checkbox"
-                  checked={saleForm.isActive}
-                  onChange={(e) =>
-                    setSaleForm({ ...saleForm, isActive: e.target.checked })
-                  }
-                />
-                Active
-              </label>
-            </div>
           </div>
+
+          <StatusToggle
+            label="Visible on Storefront"
+            checked={saleForm.isActive}
+            onChange={(val) => setSaleForm({ ...saleForm, isActive: val })}
+            onText="Live"
+            offText="Hidden"
+            helper="Turn off to pause this flash deal early."
+          />
 
           <div style={{ display: 'flex', gap: '0.75rem' }}>
             <button
               type="submit"
               disabled={savingSale}
               style={{
-                padding: '0.7rem 1.4rem',
+                padding: '0.75rem 1.4rem',
                 borderRadius: '8px',
                 border: 'none',
                 background: 'var(--gold-400)',
@@ -359,8 +379,8 @@ export default function FlashSalesManager({
               {savingSale
                 ? 'Saving...'
                 : saleForm.id
-                  ? 'Update Flash Sale'
-                  : 'Create Flash Sale'}
+                  ? 'Update Flash Deal'
+                  : 'Launch Flash Deal'}
             </button>
             {saleForm.id && (
               <button
@@ -377,7 +397,7 @@ export default function FlashSalesManager({
                   })
                 }
                 style={{
-                  padding: '0.7rem 1rem',
+                  padding: '0.75rem 1rem',
                   borderRadius: '8px',
                   border: '1px solid var(--border)',
                   background: 'transparent',
@@ -407,37 +427,58 @@ export default function FlashSalesManager({
                   borderBottom: '1px solid var(--border)',
                 }}
               >
-                <th style={{ padding: '0.5rem' }}>Title</th>
-                <th style={{ padding: '0.5rem' }}>Product</th>
-                <th style={{ padding: '0.5rem' }}>Sale Price</th>
-                <th style={{ padding: '0.5rem' }}>Window</th>
-                <th style={{ padding: '0.5rem' }}>Active</th>
-                <th style={{ padding: '0.5rem' }}>Actions</th>
+                <th style={{ padding: '0.55rem' }}>Deal</th>
+                <th style={{ padding: '0.55rem' }}>Product</th>
+                <th style={{ padding: '0.55rem' }}>Deal Price</th>
+                <th style={{ padding: '0.55rem' }}>Schedule</th>
+                <th style={{ padding: '0.55rem' }}>Status</th>
+                <th style={{ padding: '0.55rem' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
               {initialSales.map((fs) => {
-                const prod = productNameById.get(fs.product_id);
+                const prod = productById.get(fs.product_id);
                 return (
                   <tr
                     key={fs.id}
                     style={{ borderBottom: '1px solid var(--border)' }}
                   >
-                    <td style={{ padding: '0.6rem' }}>{fs.title}</td>
-                    <td style={{ padding: '0.6rem' }}>
+                    <td style={{ padding: '0.65rem', fontWeight: 600 }}>
+                      {fs.title}
+                    </td>
+                    <td style={{ padding: '0.65rem' }}>
                       {prod?.name ?? fs.product_id}
                     </td>
-                    <td style={{ padding: '0.6rem', color: 'var(--gold-400)' }}>
+                    <td
+                      style={{
+                        padding: '0.65rem',
+                        color: 'var(--gold-400)',
+                        fontWeight: 600,
+                      }}
+                    >
                       {formatNaira(Number(fs.sale_price))}
                     </td>
-                    <td style={{ padding: '0.6rem', fontSize: '0.78rem' }}>
+                    <td style={{ padding: '0.65rem', fontSize: '0.78rem' }}>
                       {new Date(fs.starts_at).toLocaleString()} →{' '}
                       {new Date(fs.ends_at).toLocaleString()}
                     </td>
-                    <td style={{ padding: '0.6rem' }}>
-                      {fs.is_active ? 'Yes' : 'No'}
+                    <td style={{ padding: '0.65rem' }}>
+                      <span
+                        style={{
+                          padding: '0.2rem 0.55rem',
+                          borderRadius: '999px',
+                          fontSize: '0.72rem',
+                          fontWeight: 700,
+                          background: fs.is_active
+                            ? 'rgba(34,197,94,0.16)'
+                            : 'rgba(157,176,210,0.14)',
+                          color: fs.is_active ? '#4ade80' : 'var(--ash-400)',
+                        }}
+                      >
+                        {fs.is_active ? 'Live' : 'Hidden'}
+                      </span>
                     </td>
-                    <td style={{ padding: '0.6rem', whiteSpace: 'nowrap' }}>
+                    <td style={{ padding: '0.65rem', whiteSpace: 'nowrap' }}>
                       <button
                         type="button"
                         onClick={() =>
@@ -455,12 +496,13 @@ export default function FlashSalesManager({
                         }
                         style={{
                           marginRight: '0.5rem',
-                          padding: '0.3rem 0.65rem',
+                          padding: '0.32rem 0.7rem',
                           borderRadius: '6px',
                           border: '1px solid var(--border)',
                           background: 'transparent',
                           color: 'var(--gold-400)',
                           cursor: 'pointer',
+                          fontWeight: 600,
                         }}
                       >
                         Edit
@@ -469,7 +511,7 @@ export default function FlashSalesManager({
                         type="button"
                         onClick={() => handleDeleteSale(fs.id)}
                         style={{
-                          padding: '0.3rem 0.65rem',
+                          padding: '0.32rem 0.7rem',
                           borderRadius: '6px',
                           border: '1px solid rgba(248,113,113,0.35)',
                           background: 'transparent',
@@ -499,25 +541,42 @@ export default function FlashSalesManager({
           gap: '1rem',
         }}
       >
-        <h2
-          style={{
-            fontFamily: 'var(--font-display)',
-            fontSize: '1.25rem',
-            color: 'var(--heading)',
-          }}
-        >
-          Home Hero Banner (<code>site_banners: home_hero</code>)
-        </h2>
+        <div>
+          <h2
+            style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: '1.25rem',
+              color: 'var(--heading)',
+            }}
+          >
+            Home Page Hero Banner
+          </h2>
+          <p style={{ fontSize: '0.8rem', color: 'var(--ash-400)', marginTop: '0.2rem' }}>
+            Controls the headline, action buttons, background collage, and quick
+            stats on the storefront home page.
+          </p>
+        </div>
 
         {bannerFeedback && (
-          <p style={{ color: 'var(--gold-400)', fontSize: '0.875rem' }}>
-            {bannerFeedback}
-          </p>
+          <div
+            style={{
+              padding: '0.75rem 1rem',
+              borderRadius: '8px',
+              border: `1px solid ${
+                bannerFeedback.ok ? 'rgba(34,197,94,0.45)' : 'var(--danger)'
+              }`,
+              color: bannerFeedback.ok ? '#4ade80' : 'var(--danger)',
+              fontSize: '0.875rem',
+              fontWeight: 600,
+            }}
+          >
+            {bannerFeedback.text}
+          </div>
         )}
 
         <form
           onSubmit={handleSaveBanner}
-          style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}
+          style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}
         >
           <div
             style={{
@@ -527,9 +586,7 @@ export default function FlashSalesManager({
             }}
           >
             <div>
-              <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--ash-400)', marginBottom: '0.3rem' }}>
-                Section Label
-              </label>
+              <label style={labelStyle}>Top Tagline Badge</label>
               <input
                 value={bannerForm.label}
                 onChange={(e) =>
@@ -539,9 +596,7 @@ export default function FlashSalesManager({
               />
             </div>
             <div>
-              <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--ash-400)', marginBottom: '0.3rem' }}>
-                Headline *
-              </label>
+              <label style={labelStyle}>Main Headline *</label>
               <input
                 required
                 value={bannerForm.headline}
@@ -552,9 +607,7 @@ export default function FlashSalesManager({
               />
             </div>
             <div>
-              <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--ash-400)', marginBottom: '0.3rem' }}>
-                Primary CTA Text
-              </label>
+              <label style={labelStyle}>Primary Button Label</label>
               <input
                 value={bannerForm.ctaText}
                 onChange={(e) =>
@@ -564,9 +617,7 @@ export default function FlashSalesManager({
               />
             </div>
             <div>
-              <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--ash-400)', marginBottom: '0.3rem' }}>
-                Primary CTA Link
-              </label>
+              <label style={labelStyle}>Primary Button Page</label>
               <input
                 value={bannerForm.ctaLink}
                 onChange={(e) =>
@@ -576,9 +627,7 @@ export default function FlashSalesManager({
               />
             </div>
             <div>
-              <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--ash-400)', marginBottom: '0.3rem' }}>
-                Secondary CTA Text
-              </label>
+              <label style={labelStyle}>Secondary Button Label</label>
               <input
                 value={bannerForm.secondaryCtaText}
                 onChange={(e) =>
@@ -591,9 +640,7 @@ export default function FlashSalesManager({
               />
             </div>
             <div>
-              <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--ash-400)', marginBottom: '0.3rem' }}>
-                Secondary CTA Link
-              </label>
+              <label style={labelStyle}>Secondary Button Page</label>
               <input
                 value={bannerForm.secondaryCtaLink}
                 onChange={(e) =>
@@ -608,9 +655,7 @@ export default function FlashSalesManager({
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--ash-400)', marginBottom: '0.3rem' }}>
-              Subheadline
-            </label>
+            <label style={labelStyle}>Hero Subtitle Text</label>
             <textarea
               rows={2}
               value={bannerForm.subheadline}
@@ -623,64 +668,233 @@ export default function FlashSalesManager({
 
           <div
             style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-              gap: '1rem',
+              padding: '1rem',
+              borderRadius: '10px',
+              background: 'var(--ash-900)',
+              border: '1px solid var(--border)',
             }}
           >
-            <div>
-              <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--ash-400)', marginBottom: '0.3rem' }}>
-                Background Grid Image URLs (one per line)
-              </label>
-              <textarea
-                rows={5}
-                value={bannerForm.mediaUrlsText}
-                onChange={(e) =>
-                  setBannerForm({
-                    ...bannerForm,
-                    mediaUrlsText: e.target.value,
-                  })
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '0.75rem',
+                flexWrap: 'wrap',
+                gap: '0.5rem',
+              }}
+            >
+              <div>
+                <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--heading)' }}>
+                  Highlight Stats (shown below hero buttons)
+                </div>
+                <div style={{ fontSize: '0.74rem', color: 'var(--ash-400)' }}>
+                  Example: 500+ | Products Sold
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() =>
+                  setBannerForm((prev) => ({
+                    ...prev,
+                    stats: [...prev.stats, { value: '', label: '' }],
+                  }))
                 }
-                style={{ ...inputStyle, fontFamily: 'monospace' }}
-              />
-              <input
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                onChange={handleUploadBannerImage}
-                style={{ marginTop: '0.5rem', fontSize: '0.8rem' }}
-              />
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.3rem',
+                  padding: '0.4rem 0.8rem',
+                  borderRadius: '8px',
+                  border: '1px solid var(--border-gold)',
+                  background: 'rgba(245, 200, 66, 0.1)',
+                  color: 'var(--gold-400)',
+                  fontSize: '0.8rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                <Plus size={14} /> Add Stat
+              </button>
             </div>
-            <div>
-              <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--ash-400)', marginBottom: '0.3rem' }}>
-                Hero Stats JSON
-              </label>
-              <textarea
-                rows={5}
-                value={bannerForm.statsJson}
-                onChange={(e) =>
-                  setBannerForm({ ...bannerForm, statsJson: e.target.value })
-                }
-                style={{ ...inputStyle, fontFamily: 'monospace' }}
-              />
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginTop: '0.6rem', cursor: 'pointer' }}>
-                <input
-                  type="checkbox"
-                  checked={bannerForm.isActive}
-                  onChange={(e) =>
-                    setBannerForm({ ...bannerForm, isActive: e.target.checked })
-                  }
-                />
-                Banner Active
-              </label>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              {bannerForm.stats.map((st, idx) => (
+                <div
+                  key={idx}
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: '140px 1fr auto',
+                    gap: '0.5rem',
+                    alignItems: 'center',
+                  }}
+                >
+                  <input
+                    value={st.value}
+                    placeholder="500+"
+                    onChange={(e) => {
+                      const next = [...bannerForm.stats];
+                      next[idx] = { ...next[idx], value: e.target.value };
+                      setBannerForm({ ...bannerForm, stats: next });
+                    }}
+                    style={{ ...inputStyle, background: 'var(--surface)' }}
+                  />
+                  <input
+                    value={st.label}
+                    placeholder="Products Sold"
+                    onChange={(e) => {
+                      const next = [...bannerForm.stats];
+                      next[idx] = { ...next[idx], label: e.target.value };
+                      setBannerForm({ ...bannerForm, stats: next });
+                    }}
+                    style={{ ...inputStyle, background: 'var(--surface)' }}
+                  />
+                  <button
+                    type="button"
+                    aria-label="Remove stat"
+                    onClick={() =>
+                      setBannerForm((prev) => ({
+                        ...prev,
+                        stats: prev.stats.filter((_, i) => i !== idx),
+                      }))
+                    }
+                    style={{
+                      padding: '0.5rem',
+                      borderRadius: '8px',
+                      border: '1px solid rgba(248,113,113,0.35)',
+                      background: 'transparent',
+                      color: 'var(--danger)',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              ))}
             </div>
           </div>
 
           <div>
+            <label style={labelStyle}>Hero Background Photos (up to 6)</label>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+                gap: '0.85rem',
+                alignItems: 'center',
+              }}
+            >
+              <ImageUploadDropzone
+                uploading={uploadingBanner}
+                onFileSelected={handleUploadBannerImage}
+                label="Upload hero photo"
+              />
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <input
+                  placeholder="Or paste an image URL..."
+                  value={newBannerImageUrl}
+                  onChange={(e) => setNewBannerImageUrl(e.target.value)}
+                  style={inputStyle}
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!newBannerImageUrl.trim()) return;
+                    setBannerForm((prev) => ({
+                      ...prev,
+                      mediaUrls: [...prev.mediaUrls, newBannerImageUrl.trim()],
+                    }));
+                    setNewBannerImageUrl('');
+                  }}
+                  style={{
+                    padding: '0 1rem',
+                    borderRadius: '8px',
+                    border: '1px solid var(--border)',
+                    background: 'var(--ash-800)',
+                    color: 'var(--heading)',
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                    fontSize: '0.825rem',
+                  }}
+                >
+                  Add Link
+                </button>
+              </div>
+            </div>
+
+            {bannerForm.mediaUrls.length > 0 && (
+              <div
+                style={{
+                  display: 'flex',
+                  gap: '0.65rem',
+                  flexWrap: 'wrap',
+                  marginTop: '0.75rem',
+                }}
+              >
+                {bannerForm.mediaUrls.map((url, idx) => (
+                  <div
+                    key={`${url}-${idx}`}
+                    style={{
+                      position: 'relative',
+                      width: '88px',
+                      height: '62px',
+                      borderRadius: '8px',
+                      overflow: 'hidden',
+                      border: '1px solid var(--border)',
+                    }}
+                  >
+                    <img
+                      src={url}
+                      alt={`Hero ${idx + 1}`}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                      }}
+                    />
+                    <button
+                      type="button"
+                      aria-label="Remove hero image"
+                      onClick={() =>
+                        setBannerForm((prev) => ({
+                          ...prev,
+                          mediaUrls: prev.mediaUrls.filter((_, i) => i !== idx),
+                        }))
+                      }
+                      style={{
+                        position: 'absolute',
+                        top: '2px',
+                        right: '2px',
+                        background: 'rgba(0,0,0,0.8)',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '4px',
+                        padding: '0 5px',
+                        fontSize: '0.7rem',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <StatusToggle
+            label="Visible on Storefront"
+            checked={bannerForm.isActive}
+            onChange={(val) => setBannerForm({ ...bannerForm, isActive: val })}
+            onText="Live"
+            offText="Hidden"
+          />
+
+          <div>
             <button
               type="submit"
-              disabled={savingBanner}
+              disabled={savingBanner || uploadingBanner}
               style={{
-                padding: '0.75rem 1.5rem',
+                padding: '0.8rem 1.5rem',
                 borderRadius: '8px',
                 border: 'none',
                 background: 'var(--gold-400)',
@@ -689,7 +903,7 @@ export default function FlashSalesManager({
                 cursor: 'pointer',
               }}
             >
-              {savingBanner ? 'Saving Banner...' : 'Save Hero Banner'}
+              {savingBanner ? 'Saving...' : 'Save Home Hero Banner'}
             </button>
           </div>
         </form>

@@ -4,8 +4,15 @@ import type { ContactMessageRow, ReviewRow } from '@/lib/db/mappers';
 
 export const dynamic = 'force-dynamic';
 
-export default async function AdminReviewsPage() {
-  const { supabase } = await requireAdminPage('/admin/reviews');
+export default async function AdminReviewsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ tab?: string }>;
+}) {
+  const [{ supabase }, params] = await Promise.all([
+    requireAdminPage('/admin/reviews'),
+    searchParams,
+  ]);
 
   const [reviewsRes, messagesRes] = await Promise.all([
     supabase
@@ -18,10 +25,13 @@ export default async function AdminReviewsPage() {
       .order('created_at', { ascending: false }),
   ]);
 
+  const initialTab = params.tab === 'messages' ? 'messages' : 'reviews';
+
   return (
     <ReviewsMessagesManager
       reviews={(reviewsRes.data ?? []) as ReviewRow[]}
       messages={(messagesRes.data ?? []) as ContactMessageRow[]}
+      initialTab={initialTab}
     />
   );
 }

@@ -1,9 +1,46 @@
 import Link from 'next/link';
-import { AlertTriangle, ShieldAlert } from 'lucide-react';
+import {
+  AlertTriangle,
+  ShieldAlert,
+  MessageSquare,
+  Star,
+  Package,
+} from 'lucide-react';
 import { requireAdminPage } from '@/lib/auth/require-admin';
 import { formatNaira } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
+
+const PAYMENT_STATUS_LABELS: Record<
+  string,
+  { label: string; bg: string; color: string }
+> = {
+  paid: {
+    label: 'Paid & Confirmed',
+    bg: 'rgba(34,197,94,0.15)',
+    color: '#4ade80',
+  },
+  pending: {
+    label: 'Awaiting Payment',
+    bg: 'rgba(245,200,66,0.14)',
+    color: 'var(--gold-400)',
+  },
+  paid_needs_review: {
+    label: 'Paid — Stock Check Required',
+    bg: 'rgba(248,113,113,0.18)',
+    color: 'var(--danger)',
+  },
+  failed: {
+    label: 'Payment Failed',
+    bg: 'rgba(248,113,113,0.1)',
+    color: 'var(--danger)',
+  },
+  refunded: {
+    label: 'Refunded',
+    bg: 'rgba(157,176,210,0.14)',
+    color: 'var(--ash-300)',
+  },
+};
 
 export default async function AdminOverviewPage() {
   const { supabase } = await requireAdminPage('/admin');
@@ -59,6 +96,7 @@ export default async function AdminOverviewPage() {
   const lowStockCount = products.filter(
     (p) => p.is_active && Number(p.stock_quantity) < 5
   ).length;
+  const liveProductsCount = products.filter((p) => p.is_active).length;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
@@ -67,123 +105,243 @@ export default async function AdminOverviewPage() {
         <h1 className="section-heading" style={{ fontSize: '2rem' }}>
           Store Overview
         </h1>
+        <p style={{ color: 'var(--ash-400)', fontSize: '0.9rem', marginTop: '0.35rem' }}>
+          Quick summary of your orders, stock levels, and customer messages.
+        </p>
       </div>
 
-      {paidNeedsReviewOrders.length > 0 && (
-        <div
-          style={{
-            background: 'rgba(248, 113, 113, 0.12)',
-            border: '1px solid var(--danger)',
-            borderRadius: '12px',
-            padding: '1rem 1.25rem',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '1rem',
-            flexWrap: 'wrap',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <ShieldAlert size={22} color="var(--danger)" />
-            <div>
-              <strong style={{ color: 'var(--heading)', display: 'block' }}>
-                {paidNeedsReviewOrders.length} order
-                {paidNeedsReviewOrders.length === 1 ? '' : 's'} flagged{' '}
-                <code>paid_needs_review</code>
-              </strong>
-              <span style={{ fontSize: '0.85rem', color: 'var(--ash-300)' }}>
-                Requires manual verification (amount/reference mismatch, expired
-                window, or low stock at payment time).
-              </span>
-            </div>
-          </div>
-          <Link
-            href="/admin/orders?filter=paid_needs_review"
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+        {paidNeedsReviewOrders.length > 0 && (
+          <div
             style={{
-              padding: '0.55rem 1rem',
-              borderRadius: '8px',
-              background: 'var(--danger)',
-              color: '#ffffff',
-              fontWeight: 600,
-              fontSize: '0.85rem',
-              textDecoration: 'none',
+              background: 'rgba(248, 113, 113, 0.12)',
+              border: '1px solid var(--danger)',
+              borderRadius: '12px',
+              padding: '1rem 1.25rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '1rem',
+              flexWrap: 'wrap',
             }}
           >
-            Review Now
-          </Link>
-        </div>
-      )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <ShieldAlert size={22} color="var(--danger)" />
+              <div>
+                <strong style={{ color: 'var(--heading)', display: 'block' }}>
+                  {paidNeedsReviewOrders.length} order
+                  {paidNeedsReviewOrders.length === 1 ? '' : 's'} marked
+                  &ldquo;Paid — Stock Check Required&rdquo;
+                </strong>
+                <span style={{ fontSize: '0.85rem', color: 'var(--ash-300)' }}>
+                  Customer paid, but stock or order window needs a manual check
+                  before shipping.
+                </span>
+              </div>
+            </div>
+            <Link
+              href="/admin/orders?filter=paid_needs_review"
+              style={{
+                padding: '0.55rem 1rem',
+                borderRadius: '8px',
+                background: 'var(--danger)',
+                color: '#ffffff',
+                fontWeight: 600,
+                fontSize: '0.85rem',
+                textDecoration: 'none',
+              }}
+            >
+              Check Orders
+            </Link>
+          </div>
+        )}
 
-      {highValueReviewOrders.length > 0 && (
-        <div
-          style={{
-            background: 'rgba(245, 200, 66, 0.1)',
-            border: '1px solid var(--border-gold)',
-            borderRadius: '12px',
-            padding: '1rem 1.25rem',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '1rem',
-            flexWrap: 'wrap',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <AlertTriangle size={22} color="var(--gold-400)" />
-            <div>
-              <strong style={{ color: 'var(--heading)', display: 'block' }}>
-                {highValueReviewOrders.length} high-value order
-                {highValueReviewOrders.length === 1 ? '' : 's'} awaiting dispatch
-                approval
-              </strong>
-              <span style={{ fontSize: '0.85rem', color: 'var(--ash-300)' }}>
-                Orders above your high-value threshold are marked{' '}
-                <code>requires_review</code> until approved.
-              </span>
-            </div>
-          </div>
-          <Link
-            href="/admin/orders?filter=requires_review"
+        {highValueReviewOrders.length > 0 && (
+          <div
             style={{
-              padding: '0.55rem 1rem',
-              borderRadius: '8px',
-              background: 'var(--gold-400)',
-              color: 'var(--on-gold)',
-              fontWeight: 600,
-              fontSize: '0.85rem',
-              textDecoration: 'none',
+              background: 'rgba(245, 200, 66, 0.1)',
+              border: '1px solid var(--border-gold)',
+              borderRadius: '12px',
+              padding: '1rem 1.25rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '1rem',
+              flexWrap: 'wrap',
             }}
           >
-            Inspect Orders
-          </Link>
-        </div>
-      )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <AlertTriangle size={22} color="var(--gold-400)" />
+              <div>
+                <strong style={{ color: 'var(--heading)', display: 'block' }}>
+                  {highValueReviewOrders.length} high-value order
+                  {highValueReviewOrders.length === 1 ? '' : 's'} waiting for
+                  dispatch approval
+                </strong>
+                <span style={{ fontSize: '0.85rem', color: 'var(--ash-300)' }}>
+                  Verify customer and payment details, then click &ldquo;Approve
+                  for Dispatch&rdquo;.
+                </span>
+              </div>
+            </div>
+            <Link
+              href="/admin/orders?filter=requires_review"
+              style={{
+                padding: '0.55rem 1rem',
+                borderRadius: '8px',
+                background: 'var(--gold-400)',
+                color: 'var(--on-gold)',
+                fontWeight: 600,
+                fontSize: '0.85rem',
+                textDecoration: 'none',
+              }}
+            >
+              Approve Orders
+            </Link>
+          </div>
+        )}
+
+        {unresolvedMessages > 0 && (
+          <div
+            style={{
+              background: 'rgba(34, 211, 238, 0.08)',
+              border: '1px solid var(--cyan-glow)',
+              borderRadius: '12px',
+              padding: '0.9rem 1.25rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '1rem',
+              flexWrap: 'wrap',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <MessageSquare size={20} color="var(--cyan-400)" />
+              <span style={{ color: 'var(--heading)', fontSize: '0.9rem' }}>
+                <strong>{unresolvedMessages}</strong> customer message
+                {unresolvedMessages === 1 ? '' : 's'} waiting for a reply
+              </span>
+            </div>
+            <Link
+              href="/admin/reviews?tab=messages"
+              style={{
+                padding: '0.45rem 0.95rem',
+                borderRadius: '8px',
+                background: 'var(--cyan-400)',
+                color: 'var(--on-cyan)',
+                fontWeight: 700,
+                fontSize: '0.825rem',
+                textDecoration: 'none',
+              }}
+            >
+              Open Inbox
+            </Link>
+          </div>
+        )}
+
+        {pendingReviews > 0 && (
+          <div
+            style={{
+              background: 'var(--surface)',
+              border: '1px solid var(--border-gold)',
+              borderRadius: '12px',
+              padding: '0.9rem 1.25rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '1rem',
+              flexWrap: 'wrap',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <Star size={20} color="var(--gold-400)" />
+              <span style={{ color: 'var(--heading)', fontSize: '0.9rem' }}>
+                <strong>{pendingReviews}</strong> customer review
+                {pendingReviews === 1 ? '' : 's'} waiting for approval
+              </span>
+            </div>
+            <Link
+              href="/admin/reviews?tab=reviews"
+              style={{
+                padding: '0.45rem 0.95rem',
+                borderRadius: '8px',
+                border: '1px solid var(--border-gold)',
+                color: 'var(--gold-400)',
+                fontWeight: 600,
+                fontSize: '0.825rem',
+                textDecoration: 'none',
+              }}
+            >
+              Review Feedback
+            </Link>
+          </div>
+        )}
+
+        {lowStockCount > 0 && (
+          <div
+            style={{
+              background: 'var(--surface)',
+              border: '1px solid var(--border)',
+              borderRadius: '12px',
+              padding: '0.9rem 1.25rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '1rem',
+              flexWrap: 'wrap',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <Package size={20} color="var(--gold-400)" />
+              <span style={{ color: 'var(--heading)', fontSize: '0.9rem' }}>
+                <strong>{lowStockCount}</strong> live product
+                {lowStockCount === 1 ? ' is' : 's are'} running low on stock
+                (under 5 units)
+              </span>
+            </div>
+            <Link
+              href="/admin/products"
+              style={{
+                padding: '0.45rem 0.95rem',
+                borderRadius: '8px',
+                border: '1px solid var(--border)',
+                color: 'var(--heading)',
+                fontWeight: 600,
+                fontSize: '0.825rem',
+                textDecoration: 'none',
+              }}
+            >
+              Restock Products
+            </Link>
+          </div>
+        )}
+      </div>
 
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))',
           gap: '1rem',
         }}
       >
         {[
           {
-            label: 'Paid Revenue (Recent 50)',
+            label: 'Confirmed Sales (Recent 50)',
             value: formatNaira(paidRevenueKobo),
             href: '/admin/orders',
           },
           {
-            label: 'Active Products',
-            value: `${products.filter((p) => p.is_active).length} (${lowStockCount} low stock)`,
+            label: 'Live Products',
+            value: `${liveProductsCount} (${lowStockCount} low stock)`,
             href: '/admin/products',
           },
           {
-            label: 'Active Flash Sales',
+            label: 'Running Flash Deals',
             value: String(activeFlashSales),
             href: '/admin/flash-sales',
           },
           {
-            label: 'Pending Moderation',
+            label: 'Reviews & Inbox Waiting',
             value: `${pendingReviews} reviews · ${unresolvedMessages} msgs`,
             href: '/admin/reviews',
           },
@@ -205,7 +363,7 @@ export default async function AdminOverviewPage() {
             <div
               style={{
                 fontFamily: 'var(--font-display)',
-                fontSize: '1.45rem',
+                fontSize: '1.4rem',
                 fontWeight: 700,
                 color: 'var(--gold-400)',
                 marginTop: '0.35rem',
@@ -252,7 +410,7 @@ export default async function AdminOverviewPage() {
               fontWeight: 600,
             }}
           >
-            View all →
+            Manage all orders →
           </Link>
         </div>
 
@@ -281,59 +439,63 @@ export default async function AdminOverviewPage() {
                   <th style={{ padding: '0.6rem' }}>Customer</th>
                   <th style={{ padding: '0.6rem' }}>Total</th>
                   <th style={{ padding: '0.6rem' }}>Payment</th>
-                  <th style={{ padding: '0.6rem' }}>Fulfillment</th>
+                  <th style={{ padding: '0.6rem' }}>Delivery</th>
                 </tr>
               </thead>
               <tbody>
-                {orders.slice(0, 10).map((order) => (
-                  <tr
-                    key={order.id}
-                    style={{ borderBottom: '1px solid var(--border)' }}
-                  >
-                    <td
-                      style={{
-                        padding: '0.7rem 0.6rem',
-                        fontWeight: 600,
-                        color: 'var(--gold-400)',
-                      }}
+                {orders.slice(0, 10).map((order) => {
+                  const statusMeta = PAYMENT_STATUS_LABELS[
+                    order.payment_status
+                  ] ?? {
+                    label: order.payment_status,
+                    bg: 'rgba(157,176,210,0.14)',
+                    color: 'var(--ash-300)',
+                  };
+                  return (
+                    <tr
+                      key={order.id}
+                      style={{ borderBottom: '1px solid var(--border)' }}
                     >
-                      {order.order_number}
-                    </td>
-                    <td style={{ padding: '0.7rem 0.6rem' }}>
-                      {order.customer_name}
-                    </td>
-                    <td style={{ padding: '0.7rem 0.6rem' }}>
-                      {formatNaira(Number(order.total_amount))}
-                    </td>
-                    <td style={{ padding: '0.7rem 0.6rem' }}>
-                      <span
+                      <td
                         style={{
-                          padding: '0.2rem 0.5rem',
-                          borderRadius: '999px',
-                          fontSize: '0.75rem',
+                          padding: '0.7rem 0.6rem',
                           fontWeight: 600,
-                          background:
-                            order.payment_status === 'paid'
-                              ? 'rgba(34,197,94,0.15)'
-                              : order.payment_status === 'paid_needs_review'
-                                ? 'rgba(248,113,113,0.18)'
-                                : 'rgba(245,200,66,0.14)',
-                          color:
-                            order.payment_status === 'paid'
-                              ? '#4ade80'
-                              : order.payment_status === 'paid_needs_review'
-                                ? 'var(--danger)'
-                                : 'var(--gold-400)',
+                          color: 'var(--gold-400)',
                         }}
                       >
-                        {order.payment_status}
-                      </span>
-                    </td>
-                    <td style={{ padding: '0.7rem 0.6rem' }}>
-                      {order.fulfillment_status}
-                    </td>
-                  </tr>
-                ))}
+                        {order.order_number}
+                      </td>
+                      <td style={{ padding: '0.7rem 0.6rem' }}>
+                        {order.customer_name}
+                      </td>
+                      <td style={{ padding: '0.7rem 0.6rem' }}>
+                        {formatNaira(Number(order.total_amount))}
+                      </td>
+                      <td style={{ padding: '0.7rem 0.6rem' }}>
+                        <span
+                          style={{
+                            padding: '0.2rem 0.55rem',
+                            borderRadius: '999px',
+                            fontSize: '0.75rem',
+                            fontWeight: 600,
+                            background: statusMeta.bg,
+                            color: statusMeta.color,
+                          }}
+                        >
+                          {statusMeta.label}
+                        </span>
+                      </td>
+                      <td
+                        style={{
+                          padding: '0.7rem 0.6rem',
+                          textTransform: 'capitalize',
+                        }}
+                      >
+                        {order.fulfillment_status}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

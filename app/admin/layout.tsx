@@ -29,19 +29,34 @@ export default async function AdminLayout({
           padding: '2rem',
           maxWidth: '1280px',
         }}
+        className="admin-main-content"
       >
         {children}
       </main>
       <style>{`
+        .admin-mobile-bar {
+          display: none;
+        }
         @media (max-width: 900px) {
           .admin-layout-root {
             flex-direction: column;
           }
           .admin-sidebar {
-            width: 100% !important;
-            min-height: auto !important;
-            border-right: none !important;
+            display: none !important;
+          }
+          .admin-mobile-bar {
+            display: flex !important;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.85rem 1.25rem;
+            background: var(--ash-900);
             border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 40;
+          }
+          .admin-main-content {
+            padding: 1.25rem !important;
           }
         }
       `}</style>

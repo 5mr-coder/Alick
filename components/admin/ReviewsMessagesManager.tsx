@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Mail } from 'lucide-react';
 import type { ContactMessageRow, ReviewRow } from '@/lib/db/mappers';
 import {
   deleteContactMessageAction,
@@ -13,14 +14,19 @@ import {
 export default function ReviewsMessagesManager({
   reviews,
   messages,
+  initialTab = 'reviews',
 }: {
   reviews: ReviewRow[];
   messages: ContactMessageRow[];
+  initialTab?: 'reviews' | 'messages';
 }) {
   const router = useRouter();
-  const [tab, setTab] = useState<'reviews' | 'messages'>('reviews');
+  const [tab, setTab] = useState<'reviews' | 'messages'>(initialTab);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
+
+  const pendingReviewCount = reviews.filter((r) => !r.is_approved).length;
+  const openMessageCount = messages.filter((m) => !m.is_resolved).length;
 
   const runAction = async (
     id: string,
@@ -40,13 +46,16 @@ export default function ReviewsMessagesManager({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       <div>
-        <div className="section-label">Moderation & Inbox</div>
+        <div className="section-label">Customer Care</div>
         <h1 className="section-heading" style={{ fontSize: '2rem' }}>
-          Reviews & Contact Messages
+          Reviews &amp; Customer Inbox
         </h1>
+        <p style={{ color: 'var(--ash-400)', fontSize: '0.9rem', marginTop: '0.25rem' }}>
+          Approve customer reviews before they appear publicly, and reply to incoming inquiries.
+        </p>
       </div>
 
-      <div style={{ display: 'flex', gap: '0.75rem' }}>
+      <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
         <button
           type="button"
           onClick={() => setTab('reviews')}
@@ -63,7 +72,8 @@ export default function ReviewsMessagesManager({
             cursor: 'pointer',
           }}
         >
-          Reviews ({reviews.length})
+          Customer Reviews ({reviews.length})
+          {pendingReviewCount > 0 ? ` · ${pendingReviewCount} waiting` : ''}
         </button>
         <button
           type="button"
@@ -81,7 +91,8 @@ export default function ReviewsMessagesManager({
             cursor: 'pointer',
           }}
         >
-          Contact Messages ({messages.length})
+          Contact Inbox ({messages.length})
+          {openMessageCount > 0 ? ` · ${openMessageCount} unread` : ''}
         </button>
       </div>
 
@@ -94,7 +105,7 @@ export default function ReviewsMessagesManager({
       {tab === 'reviews' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           {reviews.length === 0 ? (
-            <p style={{ color: 'var(--ash-400)' }}>No reviews yet.</p>
+            <p style={{ color: 'var(--ash-400)' }}>No customer reviews yet.</p>
           ) : (
             reviews.map((r) => (
               <div
@@ -114,25 +125,44 @@ export default function ReviewsMessagesManager({
                 }}
               >
                 <div style={{ flex: 1, minWidth: '240px' }}>
-                  <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center', marginBottom: '0.35rem' }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      gap: '0.6rem',
+                      alignItems: 'center',
+                      flexWrap: 'wrap',
+                      marginBottom: '0.35rem',
+                    }}
+                  >
                     <strong style={{ color: 'var(--heading)' }}>
                       {r.author_name}
                     </strong>
                     <span style={{ color: 'var(--gold-400)', fontSize: '0.85rem' }}>
                       {'★'.repeat(r.rating)}
                     </span>
-                    <span className="badge badge-gold">
-                      {r.is_approved ? 'Approved' : 'Pending'}
+                    <span
+                      style={{
+                        padding: '0.15rem 0.55rem',
+                        borderRadius: '999px',
+                        fontSize: '0.72rem',
+                        fontWeight: 700,
+                        background: r.is_approved
+                          ? 'rgba(34,197,94,0.16)'
+                          : 'rgba(245,200,66,0.16)',
+                        color: r.is_approved ? '#4ade80' : 'var(--gold-400)',
+                      }}
+                    >
+                      {r.is_approved ? 'Live on Storefront' : 'Pending Approval'}
                     </span>
                   </div>
                   <p style={{ fontSize: '0.875rem', color: 'var(--ash-300)', lineHeight: 1.6 }}>
                     {r.comment}
                   </p>
                   <div style={{ fontSize: '0.75rem', color: 'var(--ash-500)', marginTop: '0.35rem' }}>
-                    {new Date(r.created_at).toLocaleString()}
+                    Submitted {new Date(r.created_at).toLocaleString()}
                   </div>
                 </div>
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                   <button
                     type="button"
                     disabled={busyId === r.id}
@@ -142,7 +172,7 @@ export default function ReviewsMessagesManager({
                       )
                     }
                     style={{
-                      padding: '0.45rem 0.9rem',
+                      padding: '0.45rem 0.95rem',
                       borderRadius: '6px',
                       border: 'none',
                       background: r.is_approved
@@ -153,17 +183,17 @@ export default function ReviewsMessagesManager({
                       cursor: 'pointer',
                     }}
                   >
-                    {r.is_approved ? 'Unapprove' : 'Approve'}
+                    {r.is_approved ? 'Hide from Store' : 'Approve & Publish'}
                   </button>
                   <button
                     type="button"
                     disabled={busyId === r.id}
                     onClick={() => {
-                      if (!confirm('Delete this review?')) return;
+                      if (!confirm('Delete this review permanently?')) return;
                       runAction(r.id, () => deleteReviewAction(r.id));
                     }}
                     style={{
-                      padding: '0.45rem 0.8rem',
+                      padding: '0.45rem 0.85rem',
                       borderRadius: '6px',
                       border: '1px solid rgba(248,113,113,0.4)',
                       background: 'transparent',
@@ -183,7 +213,7 @@ export default function ReviewsMessagesManager({
       {tab === 'messages' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           {messages.length === 0 ? (
-            <p style={{ color: 'var(--ash-400)' }}>No contact messages yet.</p>
+            <p style={{ color: 'var(--ash-400)' }}>No customer messages yet.</p>
           ) : (
             messages.map((m) => (
               <div
@@ -206,6 +236,7 @@ export default function ReviewsMessagesManager({
                     justifyContent: 'space-between',
                     flexWrap: 'wrap',
                     gap: '0.5rem',
+                    alignItems: 'center',
                   }}
                 >
                   <div>
@@ -215,11 +246,22 @@ export default function ReviewsMessagesManager({
                     <div style={{ fontSize: '0.8rem', color: 'var(--ash-400)' }}>
                       From {m.name} ({m.email})
                       {m.phone ? ` · ${m.phone}` : ''}
-                      {m.service_slug ? ` · Service: ${m.service_slug}` : ''}
+                      {m.service_slug ? ` · Related service: ${m.service_slug}` : ''}
                     </div>
                   </div>
-                  <span className="badge badge-gold">
-                    {m.is_resolved ? 'Resolved' : 'Open'}
+                  <span
+                    style={{
+                      padding: '0.15rem 0.55rem',
+                      borderRadius: '999px',
+                      fontSize: '0.72rem',
+                      fontWeight: 700,
+                      background: m.is_resolved
+                        ? 'rgba(34,197,94,0.16)'
+                        : 'rgba(245,200,66,0.16)',
+                      color: m.is_resolved ? '#4ade80' : 'var(--gold-400)',
+                    }}
+                  >
+                    {m.is_resolved ? 'Resolved' : 'Needs Reply'}
                   </span>
                 </div>
                 <p
@@ -237,14 +279,34 @@ export default function ReviewsMessagesManager({
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
+                    flexWrap: 'wrap',
+                    gap: '0.6rem',
                     paddingTop: '0.5rem',
                     borderTop: '1px solid var(--border)',
                   }}
                 >
                   <span style={{ fontSize: '0.75rem', color: 'var(--ash-500)' }}>
-                    {new Date(m.created_at).toLocaleString()}
+                    Received {new Date(m.created_at).toLocaleString()}
                   </span>
-                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                    <a
+                      href={`mailto:${encodeURIComponent(m.email)}?subject=${encodeURIComponent(`Re: ${m.subject}`)}`}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.35rem',
+                        padding: '0.4rem 0.85rem',
+                        borderRadius: '6px',
+                        border: '1px solid var(--border)',
+                        background: 'var(--ash-900)',
+                        color: 'var(--heading)',
+                        fontSize: '0.825rem',
+                        fontWeight: 600,
+                        textDecoration: 'none',
+                      }}
+                    >
+                      <Mail size={14} /> Reply via Email
+                    </a>
                     <button
                       type="button"
                       disabled={busyId === m.id}
@@ -268,13 +330,13 @@ export default function ReviewsMessagesManager({
                         cursor: 'pointer',
                       }}
                     >
-                      {m.is_resolved ? 'Reopen' : 'Mark Resolved'}
+                      {m.is_resolved ? 'Reopen Inquiry' : 'Mark Resolved'}
                     </button>
                     <button
                       type="button"
                       disabled={busyId === m.id}
                       onClick={() => {
-                        if (!confirm('Delete this message?')) return;
+                        if (!confirm('Delete this message permanently?')) return;
                         runAction(m.id, () => deleteContactMessageAction(m.id));
                       }}
                       style={{
