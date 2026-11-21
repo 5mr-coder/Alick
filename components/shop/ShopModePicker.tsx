@@ -24,27 +24,45 @@ const choices: { mode: SalesMode; title: string; description: string }[] = [
 export default function ShopModePicker({ mode, onChange, compact = false }: ShopModePickerProps) {
   if (compact && mode) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '2rem' }}>
-        {choices.map((choice) => (
-          <button
-            key={choice.mode}
-            type="button"
-            aria-pressed={mode === choice.mode}
-            onClick={() => onChange(choice.mode)}
-            style={{
-              padding: '0.65rem 1rem',
-              borderRadius: '999px',
-              border: `1px solid ${mode === choice.mode ? 'var(--gold-400)' : 'var(--border)'}`,
-              background: mode === choice.mode ? 'rgba(212,160,23,0.12)' : 'var(--surface)',
-              color: mode === choice.mode ? 'var(--gold-400)' : 'var(--ash-300)',
-              cursor: 'pointer',
-              fontSize: '0.875rem',
-              fontWeight: 600,
-            }}
-          >
-            {choice.mode === 'consumer' ? 'Personal shopping · max 9' : 'Retail / bulk · min 10'}
-          </button>
-        ))}
+      <div
+        role="group"
+        aria-label="Pricing mode"
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '0.25rem',
+          padding: '0.25rem',
+          borderRadius: '999px',
+          border: '1px solid var(--border)',
+          background: 'var(--surface)',
+          flexWrap: 'wrap',
+        }}
+      >
+        {choices.map((choice) => {
+          const active = mode === choice.mode;
+          return (
+            <button
+              key={choice.mode}
+              type="button"
+              aria-pressed={active}
+              onClick={() => onChange(choice.mode)}
+              style={{
+                padding: '0.45rem 0.875rem',
+                borderRadius: '999px',
+                border: '1px solid transparent',
+                background: active ? 'var(--gold-400)' : 'transparent',
+                color: active ? 'var(--on-gold)' : 'var(--ash-300)',
+                cursor: 'pointer',
+                fontSize: '0.8125rem',
+                fontWeight: 600,
+                WebkitTapHighlightColor: 'transparent',
+                transition: 'background-color 180ms var(--ease-out), color 180ms var(--ease-out)',
+              }}
+            >
+              {choice.mode === 'consumer' ? 'Personal · 1–9' : 'Retail / Bulk · 10+'}
+            </button>
+          );
+        })}
       </div>
     );
   }
@@ -73,9 +91,10 @@ export default function ShopModePicker({ mode, onChange, compact = false }: Shop
             <button
               key={choice.mode}
               type="button"
+              className="card"
               onClick={() => onChange(choice.mode)}
               style={{
-                minHeight: '180px',
+                minHeight: '168px',
                 padding: '1.75rem',
                 borderRadius: '16px',
                 border: '1px solid var(--border-gold)',
@@ -83,10 +102,7 @@ export default function ShopModePicker({ mode, onChange, compact = false }: Shop
                 color: 'var(--heading)',
                 textAlign: 'left',
                 cursor: 'pointer',
-                transition: 'transform 180ms ease, border-color 180ms ease',
               }}
-              onMouseEnter={(event) => { event.currentTarget.style.transform = 'translateY(-3px)'; }}
-              onMouseLeave={(event) => { event.currentTarget.style.transform = 'none'; }}
             >
               <span style={{ display: 'block', color: 'var(--gold-400)', fontSize: '1.2rem', fontWeight: 700, marginBottom: '0.75rem' }}>
                 {choice.title}

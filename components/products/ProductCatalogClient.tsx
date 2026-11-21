@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import AnimatedSection from '@/components/ui/AnimatedSection';
 import ProductCard from '@/components/products/ProductCard';
-import { Filter, X } from 'lucide-react';
+import { Filter, Search, X, Zap } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import ShopModePicker from '@/components/shop/ShopModePicker';
 import type { Product } from '@/types';
@@ -143,12 +143,14 @@ function FilterSidebar({
               style={{ accentColor: 'var(--cyan-400)' }}
             />
             <span
+              className="inline-flex items-center gap-1.5"
               style={{
                 fontSize: '0.875rem',
                 color: showFlash ? 'var(--cyan-400)' : 'var(--ash-400)',
               }}
             >
-              ⚡ Flash Sale
+              <Zap size={14} aria-hidden="true" />
+              Flash Sale
             </span>
           </label>
         </div>
@@ -171,10 +173,12 @@ export default function ProductCatalogClient({
   radioName: string;
 }) {
   const { salesMode, setSalesMode, isLoaded } = useCart();
+  const activeSalesMode = salesMode ?? 'consumer';
 
   const [activeBrand, setActiveBrand] = useState('All');
   const [sortBy, setSortBy] = useState('Newest');
   const [showFlash, setShowFlash] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
   const uniqueBrands = [
@@ -188,22 +192,31 @@ export default function ProductCatalogClient({
     setActiveBrand('All');
     setShowFlash(false);
     setSortBy('Newest');
+    setSearchQuery('');
   };
+
+  const normalizedQuery = searchQuery.trim().toLowerCase();
 
   const filtered = products
     .filter((p) => (activeBrand === 'All' ? true : p.brand === activeBrand))
     .filter((p) => (showFlash ? p.is_flash_sale : true))
+    .filter((p) => {
+      if (!normalizedQuery) return true;
+      const specValues = p.specs ? Object.values(p.specs).join(' ') : '';
+      const haystack = `${p.name} ${p.brand || ''} ${p.model || ''} ${specValues}`.toLowerCase();
+      return haystack.includes(normalizedQuery);
+    })
     .sort((a, b) => {
       if (sortBy === 'Price: Low to High') {
         return (
-          getEffectiveUnitPrice(a, salesMode) -
-          getEffectiveUnitPrice(b, salesMode)
+          getEffectiveUnitPrice(a, activeSalesMode) -
+          getEffectiveUnitPrice(b, activeSalesMode)
         );
       }
       if (sortBy === 'Price: High to Low') {
         return (
-          getEffectiveUnitPrice(b, salesMode) -
-          getEffectiveUnitPrice(a, salesMode)
+          getEffectiveUnitPrice(b, activeSalesMode) -
+          getEffectiveUnitPrice(a, activeSalesMode)
         );
       }
       if (sortBy === 'Featured') {
@@ -214,18 +227,11 @@ export default function ProductCatalogClient({
       );
     });
 
-  if (!isLoaded) return null;
-  if (!salesMode)
-    return <ShopModePicker mode={salesMode} onChange={setSalesMode} />;
-
   return (
     <>
-      <div className="container" style={{ paddingTop: '1.5rem' }}>
-        <ShopModePicker mode={salesMode} onChange={setSalesMode} compact />
-      </div>
       <section
         style={{
-          padding: '4rem 0 3rem',
+          padding: '3.25rem 0 2.5rem',
           background:
             'linear-gradient(180deg, var(--ash-900) 0%, var(--ash-950) 100%)',
           borderBottom: '1px solid var(--border)',
@@ -233,17 +239,31 @@ export default function ProductCatalogClient({
       >
         <div className="container">
           <AnimatedSection>
-            <div className="section-label">{label}</div>
-            <h1 className="section-heading">{title}</h1>
-            <p
-              style={{
-                color: 'var(--ash-400)',
-                marginTop: '0.5rem',
-                fontSize: '0.9375rem',
-              }}
-            >
-              {subtitle}
-            </p>
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+              <div>
+                <div className="section-label">{label}</div>
+                <h1 className="section-heading">{title}</h1>
+                <p
+                  style={{
+                    color: 'var(--ash-400)',
+                    marginTop: '0.5rem',
+                    fontSize: '0.9375rem',
+                    maxWidth: '580px',
+                  }}
+                >
+                  {subtitle}
+                </p>
+              </div>
+              {isLoaded && (
+                <div className="shrink-0">
+                  <ShopModePicker
+                    mode={activeSalesMode}
+                    onChange={setSalesMode}
+                    compact
+                  />
+                </div>
+              )}
+            </div>
           </AnimatedSection>
         </div>
       </section>
@@ -264,25 +284,42 @@ export default function ProductCatalogClient({
             </div>
 
             <div className="main-content">
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  marginBottom: '2rem',
-                }}
-              >
-                <p style={{ fontSize: '0.875rem', color: 'var(--ash-400)' }}>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+                <p className="text-sm tabular-nums" style={{ color: 'var(--ash-400)' }}>
                   Showing{' '}
                   <span style={{ color: 'var(--heading)', fontWeight: 600 }}>
                     {filtered.length}
                   </span>{' '}
-                  results
+                  result{filtered.length !== 1 ? 's' : ''}
                 </p>
 
-                <div
-                  style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}
-                >
+                <div className="flex flex-wrap items-center gap-2.5">
+                  <div className="relative flex-1 sm:flex-initial min-w-[230px]">
+                    <Search
+                      size={15}
+                      aria-hidden="true"
+                      className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                      style={{ color: 'var(--ash-500)' }}
+                    />
+                    <input
+                      type="search"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Search model or spec..."
+                      aria-label="Search products"
+                      style={{
+                        width: '100%',
+                        background: 'var(--surface)',
+                        color: 'var(--heading)',
+                        border: '1px solid var(--border)',
+                        borderRadius: '8px',
+                        padding: '0.5rem 0.75rem 0.5rem 2.15rem',
+                        fontSize: '0.875rem',
+                        outline: 'none',
+                      }}
+                    />
+                  </div>
+
                   <button
                     className="mobile-filter-btn"
                     onClick={() => setMobileFiltersOpen(true)}
@@ -293,12 +330,13 @@ export default function ProductCatalogClient({
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value)}
+                    aria-label="Sort products"
                     style={{
                       background: 'var(--surface)',
                       color: 'var(--ash-200)',
                       border: '1px solid var(--border)',
                       borderRadius: '8px',
-                      padding: '0.5rem 1rem',
+                      padding: '0.5rem 0.875rem',
                       fontSize: '0.875rem',
                       cursor: 'pointer',
                       outline: 'none',
@@ -370,7 +408,12 @@ export default function ProductCatalogClient({
       </section>
 
       {mobileFiltersOpen && (
-        <div className="mobile-filter-modal">
+        <div
+          className="mobile-filter-modal"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Product filters"
+        >
           <div
             style={{
               display: 'flex',
@@ -471,7 +514,7 @@ export default function ProductCatalogClient({
           __html: `
         .layout-grid {
           display: grid;
-          grid-template-columns: 240px 1fr;
+          grid-template-columns: 240px minmax(0, 1fr);
           gap: 2rem;
           align-items: start;
         }
@@ -489,11 +532,12 @@ export default function ProductCatalogClient({
           z-index: 9999;
           display: flex;
           flex-direction: column;
+          overscroll-behavior: contain;
         }
 
         @media (max-width: 900px) {
           .layout-grid {
-            grid-template-columns: 1fr;
+            grid-template-columns: minmax(0, 1fr);
           }
           .hidden-on-mobile {
             display: none;
@@ -502,10 +546,10 @@ export default function ProductCatalogClient({
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            background: var(--ash-800);
+            background: var(--surface);
             border: 1px solid var(--border);
-            color: white;
-            padding: 0.5rem 1rem;
+            color: var(--heading);
+            padding: 0.5rem 0.875rem;
             border-radius: 8px;
             font-size: 0.875rem;
             cursor: pointer;

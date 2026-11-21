@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import Button from '@/components/ui/Button';
+import SkeletonImage from '@/components/ui/SkeletonImage';
 import type { SiteBanner } from '@/types';
 
 const defaultHeroImages = [
@@ -15,7 +16,7 @@ const defaultHeroImages = [
 
 const defaultStats = [
   { value: '500+', label: 'Products Sold' },
-  { value: '4.9★', label: 'Customer Rating' },
+  { value: '4.9 / 5', label: 'Customer Rating' },
   { value: '24hr', label: 'Repair Turnaround' },
 ];
 
@@ -62,13 +63,18 @@ export default function HeroParallax({ banner }: { banner?: SiteBanner | null })
   const headlineAccent = words.slice(splitIndex).join(' ');
 
   useEffect(() => {
+    const prefersReduced =
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReduced) return;
+
     const handleScroll = () => {
       const scrollY = window.scrollY;
       if (bgRef.current) {
-        bgRef.current.style.transform = `translateY(${scrollY * 0.45}px)`;
+        bgRef.current.style.transform = `rotate(-6deg) scale(1.22) translateY(${scrollY * 0.28}px)`;
       }
       if (textRef.current) {
-        textRef.current.style.transform = `translateY(${scrollY * 0.18}px)`;
+        textRef.current.style.transform = `translateY(${scrollY * 0.14}px)`;
         textRef.current.style.opacity = String(Math.max(0, 1 - scrollY / 600));
       }
     };
@@ -81,8 +87,8 @@ export default function HeroParallax({ banner }: { banner?: SiteBanner | null })
       className="force-dark"
       style={{
         position: 'relative',
-        height: '100vh',
-        minHeight: '680px',
+        minHeight: 'min(88dvh, 760px)',
+        padding: '4.5rem 0',
         overflow: 'hidden',
         display: 'flex',
         alignItems: 'center',
@@ -97,7 +103,7 @@ export default function HeroParallax({ banner }: { banner?: SiteBanner | null })
           gridTemplateColumns: 'repeat(3, 1fr)',
           gridTemplateRows: 'repeat(2, 1fr)',
           gap: '6px',
-          transform: 'rotate(-6deg) scale(1.25)',
+          transform: 'rotate(-6deg) scale(1.22)',
           willChange: 'transform',
         }}
       >
@@ -110,14 +116,12 @@ export default function HeroParallax({ banner }: { banner?: SiteBanner | null })
               position: 'relative',
             }}
           >
-            <img
+            <SkeletonImage
               src={src}
               alt=""
-              aria-hidden="true"
+              ariaHidden
+              loading="eager"
               style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
                 filter: 'brightness(0.45) saturate(0.7)',
               }}
             />
@@ -140,8 +144,9 @@ export default function HeroParallax({ banner }: { banner?: SiteBanner | null })
           bottom: 0,
           left: 0,
           right: 0,
-          height: '30%',
+          height: '16%',
           background: 'linear-gradient(to top, var(--ash-950), transparent)',
+          pointerEvents: 'none',
         }}
       />
 
@@ -176,9 +181,10 @@ export default function HeroParallax({ banner }: { banner?: SiteBanner | null })
           <h1
             style={{
               fontFamily: 'var(--font-display)',
-              fontSize: 'clamp(2.75rem, 6vw, 5rem)',
+              fontSize: 'clamp(2.75rem, 6vw, 4.75rem)',
               fontWeight: 800,
-              lineHeight: 1.08,
+              letterSpacing: '-0.03em',
+              lineHeight: 1.05,
               color: 'white',
               marginBottom: '1.5rem',
               animation: 'fadeUp 0.7s ease 0.25s both',
@@ -237,6 +243,7 @@ export default function HeroParallax({ banner }: { banner?: SiteBanner | null })
             {stats.map((stat) => (
               <div key={stat.label}>
                 <div
+                  className="tabular-nums"
                   style={{
                     fontFamily: 'var(--font-display)',
                     fontSize: '1.5rem',
@@ -260,59 +267,6 @@ export default function HeroParallax({ banner }: { banner?: SiteBanner | null })
             ))}
           </div>
         </div>
-      </div>
-
-      <div
-        style={{
-          position: 'absolute',
-          bottom: '2rem',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '0.5rem',
-          animation: 'fadeIn 1s ease 1.2s both',
-          zIndex: 10,
-        }}
-      >
-        <span
-          style={{
-            fontSize: '0.7rem',
-            letterSpacing: '0.2em',
-            color: 'var(--ash-500)',
-            textTransform: 'uppercase',
-          }}
-        >
-          Scroll
-        </span>
-        <div
-          style={{
-            width: '24px',
-            height: '38px',
-            borderRadius: '12px',
-            border: '1.5px solid var(--ash-600)',
-            display: 'flex',
-            justifyContent: 'center',
-            paddingTop: '6px',
-          }}
-        >
-          <div
-            style={{
-              width: '4px',
-              height: '8px',
-              borderRadius: '2px',
-              background: 'var(--gold-400)',
-              animation: 'scrollDot 1.8s ease infinite',
-            }}
-          />
-        </div>
-        <style>{`
-          @keyframes scrollDot {
-            0%   { opacity: 1; transform: translateY(0); }
-            100% { opacity: 0; transform: translateY(14px); }
-          }
-        `}</style>
       </div>
     </section>
   );

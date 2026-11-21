@@ -2,10 +2,19 @@
 
 import { useState } from 'react';
 import { useCart } from '@/context/CartContext';
-import { ShinyButton } from '@/components/ui/shiny-button';
-import { ShoppingCart, ArrowLeft, Info } from 'lucide-react';
+import {
+  AlertTriangle,
+  ArrowLeft,
+  Check,
+  Info,
+  ShieldCheck,
+  ShoppingCart,
+  Star,
+  Truck,
+} from 'lucide-react';
 import Link from 'next/link';
 import ShopModePicker from '@/components/shop/ShopModePicker';
+import SkeletonImage from '@/components/ui/SkeletonImage';
 import type { Product, Review } from '@/types';
 import { formatNaira, getEffectiveUnitPrice } from '@/lib/utils';
 import { submitReview } from '@/lib/actions/public';
@@ -43,7 +52,8 @@ export default function ProductDetailClient({
   >('idle');
   const [reviewError, setReviewError] = useState<string | null>(null);
 
-  const effectivePrice = getEffectiveUnitPrice(product, salesMode);
+  const activeSalesMode = salesMode ?? 'consumer';
+  const effectivePrice = getEffectiveUnitPrice(product, activeSalesMode);
   const strikePrice =
     product.old_price && product.old_price > effectivePrice
       ? product.old_price
@@ -56,7 +66,6 @@ export default function ProductDetailClient({
       : null;
 
   const addProductToCart = () => {
-    if (!salesMode) return;
     addToCart({
       id: product.id,
       name: product.name,
@@ -66,7 +75,7 @@ export default function ProductDetailClient({
       quantity,
       stock: product.stock,
       image: product.images[0] || '',
-      salesMode,
+      salesMode: activeSalesMode,
     });
     setAdded(true);
     setTimeout(() => setAdded(false), 2500);
@@ -92,28 +101,23 @@ export default function ProductDetailClient({
     setReviewForm({ author_name: '', rating: 5, comment: '', website: '' });
   };
 
-  if (!isLoaded) return null;
-  if (!salesMode)
-    return <ShopModePicker mode={salesMode} onChange={setSalesMode} />;
-
-  const retailUnavailable = salesMode === 'retail' && product.stock < 10;
+  const retailUnavailable = activeSalesMode === 'retail' && product.stock < 10;
   const maximumQuantity =
-    salesMode === 'consumer' ? Math.min(product.stock, 9) : product.stock;
+    activeSalesMode === 'consumer' ? Math.min(product.stock, 9) : product.stock;
   const quantityLimitReached =
-    quantity >= maximumQuantity && !(salesMode === 'consumer' && quantity >= 9);
+    quantity >= maximumQuantity && !(activeSalesMode === 'consumer' && quantity >= 9);
 
   const whatsappDigits = whatsappNumber.replace(/\D/g, '') || '2348030841357';
 
   return (
     <div
+      className="pb-28 md:pb-24"
       style={{
         background: 'var(--ash-950)',
         minHeight: '100vh',
-        paddingBottom: '6rem',
       }}
     >
       <div className="container" style={{ paddingTop: '2rem' }}>
-        <ShopModePicker mode={salesMode} onChange={setSalesMode} compact />
         <Link
           href={
             product.category_id === 'desktops'
@@ -122,20 +126,8 @@ export default function ProductDetailClient({
                 ? '/smart-gadgets'
                 : '/products'
           }
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '0.4rem',
-            color: 'var(--ash-400)',
-            textDecoration: 'none',
-            fontSize: '0.875rem',
-            marginBottom: '2rem',
-            transition: 'color 200ms ease',
-          }}
-          onMouseEnter={(e) =>
-            (e.currentTarget.style.color = 'var(--gold-400)')
-          }
-          onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--ash-400)')}
+          className="inline-flex items-center gap-1.5 text-sm mb-8 no-underline transition-colors hover:text-[var(--gold-400)]"
+          style={{ color: 'var(--ash-400)' }}
         >
           <ArrowLeft size={14} />
           Back to Products
@@ -152,6 +144,7 @@ export default function ProductDetailClient({
         >
           <div>
             <div
+              className="img-outline"
               style={{
                 aspectRatio: '4/3',
                 borderRadius: '16px',
@@ -162,15 +155,10 @@ export default function ProductDetailClient({
               }}
             >
               {product.images[activeImage] ? (
-                <img
+                <SkeletonImage
                   src={product.images[activeImage]}
                   alt={product.name}
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                    display: 'block',
-                  }}
+                  loading="eager"
                 />
               ) : (
                 <div
@@ -210,14 +198,12 @@ export default function ProductDetailClient({
                       transition: 'border-color 200ms ease',
                     }}
                   >
-                    <img
+                    <SkeletonImage
                       src={img}
                       alt=""
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover',
-                      }}
+                      ariaHidden
+                      as="span"
+                      loading="lazy"
                     />
                   </button>
                 ))}
@@ -258,11 +244,12 @@ export default function ProductDetailClient({
             <h1
               style={{
                 fontFamily: 'var(--font-display)',
-                fontSize: 'clamp(1.75rem, 3.5vw, 2.75rem)',
+                fontSize: 'clamp(1.75rem, 3.2vw, 2.5rem)',
                 fontWeight: 700,
+                letterSpacing: '-0.025em',
                 color: 'var(--heading)',
                 lineHeight: 1.1,
-                marginBottom: '1.5rem',
+                marginBottom: '1rem',
               }}
             >
               {product.name}
@@ -272,24 +259,28 @@ export default function ProductDetailClient({
               style={{
                 display: 'flex',
                 alignItems: 'baseline',
-                gap: '1rem',
-                marginBottom: '1.5rem',
+                gap: '0.875rem',
+                marginBottom: '1rem',
                 flexWrap: 'wrap',
               }}
             >
               <span
+                className="tabular-nums"
                 style={{
+                  fontFamily: 'var(--font-display)',
                   fontSize: '2rem',
                   fontWeight: 700,
-                  color: 'var(--gold-400)',
+                  letterSpacing: '-0.02em',
+                  color: 'var(--heading)',
                 }}
               >
                 {formatNaira(effectivePrice)}
               </span>
               {strikePrice > 0 && (
                 <span
+                  className="tabular-nums"
                   style={{
-                    fontSize: '1.1rem',
+                    fontSize: '1.05rem',
                     color: 'var(--ash-400)',
                     textDecoration: 'line-through',
                   }}
@@ -298,8 +289,285 @@ export default function ProductDetailClient({
                 </span>
               )}
               {(discount ?? 0) > 0 && (
-                <span className="badge badge-sale">–{discount}%</span>
+                <span className="badge badge-sale tabular-nums">–{discount}%</span>
               )}
+            </div>
+
+            {isLoaded && (
+              <div style={{ marginBottom: '1.25rem' }}>
+                <ShopModePicker
+                  mode={activeSalesMode}
+                  onChange={setSalesMode}
+                  compact
+                />
+              </div>
+            )}
+
+            <div style={{ marginBottom: '1rem' }}>
+              {product.stock === 0 ? (
+                <span
+                  style={{
+                    display: 'inline-block',
+                    padding: '0.3rem 0.75rem',
+                    borderRadius: '6px',
+                    background: 'rgba(34,211,238,0.1)',
+                    color: 'var(--cyan-400)',
+                    fontSize: '0.8rem',
+                    fontWeight: 600,
+                    border: '1px solid var(--cyan-glow)',
+                  }}
+                >
+                  Out of Stock
+                </span>
+              ) : product.stock < 5 ? (
+                <span
+                  className="inline-flex items-center gap-1.5 tabular-nums"
+                  style={{
+                    padding: '0.3rem 0.75rem',
+                    borderRadius: '6px',
+                    background: 'rgba(245,200,66,0.12)',
+                    color: 'var(--gold-400)',
+                    fontSize: '0.8rem',
+                    fontWeight: 600,
+                    border: '1px solid var(--border-gold)',
+                  }}
+                >
+                  <AlertTriangle size={14} aria-hidden="true" />
+                  Only {product.stock} left in stock
+                </span>
+              ) : (
+                <span
+                  className="inline-flex items-center gap-1.5 tabular-nums"
+                  style={{ color: 'var(--ash-400)', fontSize: '0.8125rem' }}
+                >
+                  <Check size={14} style={{ color: 'var(--cyan-400)' }} aria-hidden="true" />
+                  {product.stock} units available
+                </span>
+              )}
+            </div>
+
+            {product.stock > 0 && (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  flexWrap: 'wrap',
+                  gap: '0.75rem',
+                  marginBottom: '1.25rem',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <span style={{ color: 'var(--ash-400)', fontSize: '0.875rem' }}>
+                    Qty:
+                  </span>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      border: '1px solid var(--border)',
+                      borderRadius: '8px',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    <button
+                      onClick={() => {
+                        if (activeSalesMode === 'retail' && quantity <= 10) {
+                          setShowConsumerPrompt(true);
+                          return;
+                        }
+                        setQuantity((current) =>
+                          Math.max(activeSalesMode === 'retail' ? 10 : 1, current - 1)
+                        );
+                      }}
+                      aria-label="Decrease quantity"
+                      style={{
+                        padding: '0.45rem 0.85rem',
+                        background: 'var(--ash-800)',
+                        color: 'var(--heading)',
+                        border: 'none',
+                        cursor: 'pointer',
+                        fontSize: '1rem',
+                      }}
+                    >
+                      −
+                    </button>
+                    <span
+                      className="tabular-nums"
+                      style={{
+                        padding: '0.45rem 1rem',
+                        color: 'var(--heading)',
+                        fontSize: '0.9rem',
+                        minWidth: '2.5rem',
+                        textAlign: 'center',
+                      }}
+                    >
+                      {quantity}
+                    </span>
+                    <button
+                      onClick={() => {
+                        if (activeSalesMode === 'consumer' && quantity >= 9) {
+                          setShowRetailPrompt(true);
+                          return;
+                        }
+                        setQuantity((current) =>
+                          Math.min(maximumQuantity, current + 1)
+                        );
+                      }}
+                      disabled={quantityLimitReached || retailUnavailable}
+                      aria-label="Increase quantity"
+                      style={{
+                        padding: '0.45rem 0.85rem',
+                        background: 'var(--ash-800)',
+                        color:
+                          quantityLimitReached || retailUnavailable
+                            ? 'var(--ash-600)'
+                            : 'var(--heading)',
+                        border: 'none',
+                        cursor:
+                          quantityLimitReached || retailUnavailable
+                            ? 'default'
+                            : 'pointer',
+                        fontSize: '1rem',
+                      }}
+                    >
+                      +
+                    </button>
+                  </div>
+                  {quantity >= maximumQuantity &&
+                    !retailUnavailable &&
+                    !(activeSalesMode === 'consumer' && quantity >= 9) && (
+                      <span
+                        style={{
+                          color: 'var(--gold-400)',
+                          fontSize: '0.75rem',
+                          fontWeight: 600,
+                        }}
+                      >
+                        Selected all available
+                      </span>
+                    )}
+                </div>
+
+                {quantity > 1 && !retailUnavailable && (
+                  <div
+                    className="text-sm tabular-nums"
+                    style={{ color: 'var(--ash-300)' }}
+                  >
+                    Subtotal:{' '}
+                    <strong style={{ color: 'var(--heading)' }}>
+                      {formatNaira(effectivePrice * quantity)}
+                    </strong>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {retailUnavailable && (
+              <p
+                role="status"
+                style={{
+                  color: 'var(--gold-400)',
+                  lineHeight: 1.6,
+                  marginBottom: '1.25rem',
+                }}
+              >
+                Retail orders start at 10 units. There are {product.stock} listed
+                in stock, so contact us to confirm bulk availability.
+              </p>
+            )}
+
+            {product.stock === 0 ? (
+              <button
+                disabled
+                style={{
+                  width: '100%',
+                  height: '50px',
+                  borderRadius: '10px',
+                  background: 'var(--ash-800)',
+                  color: 'var(--ash-500)',
+                  border: '1px solid var(--border)',
+                  cursor: 'not-allowed',
+                  fontSize: '0.95rem',
+                  fontWeight: 600,
+                }}
+              >
+                Out of Stock
+              </button>
+            ) : retailUnavailable ? (
+              <a
+                href={`https://wa.me/${whatsappDigits}?text=${encodeURIComponent(
+                  `Hi, I would like to ask about a retail order of at least 10 ${product.name}.`
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '100%',
+                  height: '50px',
+                  borderRadius: '10px',
+                  background: 'var(--gold-fill)',
+                  color: 'var(--on-gold-fill)',
+                  textDecoration: 'none',
+                  fontWeight: 700,
+                  fontSize: '0.95rem',
+                }}
+              >
+                Ask about bulk availability
+              </a>
+            ) : (
+              <button
+                type="button"
+                onClick={addProductToCart}
+                className="active:scale-[0.985] transition-transform transition-colors"
+                style={{
+                  width: '100%',
+                  height: '50px',
+                  borderRadius: '10px',
+                  border: 'none',
+                  background: added ? '#22c55e' : 'var(--gold-fill)',
+                  color: added ? '#052e16' : 'var(--on-gold-fill)',
+                  fontSize: '0.95rem',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                }}
+              >
+                {added ? (
+                  <>
+                    <Check size={17} aria-hidden="true" />
+                    Added to Cart
+                  </>
+                ) : (
+                  <>
+                    <ShoppingCart size={17} aria-hidden="true" />
+                    Add to Cart
+                  </>
+                )}
+              </button>
+            )}
+
+            <div
+              className="mt-4 p-3.5 rounded-xl flex flex-col gap-2 text-xs"
+              style={{
+                background: 'var(--surface)',
+                border: '1px solid var(--border)',
+                color: 'var(--ash-300)',
+              }}
+            >
+              <div className="flex items-center gap-2">
+                <ShieldCheck size={15} style={{ color: 'var(--gold-400)', flexShrink: 0 }} aria-hidden="true" />
+                <span>Stress-tested hardware backed by Alick store warranty</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Truck size={15} style={{ color: 'var(--gold-400)', flexShrink: 0 }} aria-hidden="true" />
+                <span>Same-day Ikeja pickup or tracked Lagos & interstate delivery</span>
+              </div>
             </div>
 
             {product.description && (
@@ -307,8 +575,9 @@ export default function ProductDetailClient({
                 style={{
                   color: 'var(--ash-300)',
                   lineHeight: 1.75,
+                  marginTop: '2rem',
                   marginBottom: '2rem',
-                  fontSize: '0.975rem',
+                  fontSize: '0.95rem',
                 }}
               >
                 {product.description}
@@ -316,7 +585,7 @@ export default function ProductDetailClient({
             )}
 
             {Object.keys(product.specs || {}).length > 0 && (
-              <div style={{ marginBottom: '2.5rem' }}>
+              <div style={{ marginTop: product.description ? 0 : '2rem' }}>
                 <h3
                   style={{
                     display: 'flex',
@@ -359,219 +628,6 @@ export default function ProductDetailClient({
                   ))}
                 </dl>
               </div>
-            )}
-
-            <div style={{ marginBottom: '1.25rem' }}>
-              {product.stock === 0 ? (
-                <span
-                  style={{
-                    display: 'inline-block',
-                    padding: '0.3rem 0.75rem',
-                    borderRadius: '6px',
-                    background: 'rgba(34,211,238,0.1)',
-                    color: 'var(--cyan-400)',
-                    fontSize: '0.8rem',
-                    fontWeight: 600,
-                    border: '1px solid var(--cyan-glow)',
-                  }}
-                >
-                  Out of Stock
-                </span>
-              ) : product.stock < 5 ? (
-                <span
-                  style={{
-                    display: 'inline-block',
-                    padding: '0.3rem 0.75rem',
-                    borderRadius: '6px',
-                    background: 'rgba(245,200,66,0.12)',
-                    color: 'var(--gold-400)',
-                    fontSize: '0.8rem',
-                    fontWeight: 600,
-                    border: '1px solid var(--border-gold)',
-                  }}
-                >
-                  ⚠ Only {product.stock} left in stock!
-                </span>
-              ) : (
-                <span style={{ color: 'var(--ash-400)', fontSize: '0.8rem' }}>
-                  ✓ {product.stock} units available
-                </span>
-              )}
-            </div>
-
-            {product.stock > 0 && (
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.75rem',
-                  marginBottom: '1.5rem',
-                }}
-              >
-                <span style={{ color: 'var(--ash-400)', fontSize: '0.875rem' }}>
-                  Qty:
-                </span>
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    border: '1px solid var(--border)',
-                    borderRadius: '8px',
-                    overflow: 'hidden',
-                  }}
-                >
-                  <button
-                    onClick={() => {
-                      if (salesMode === 'retail' && quantity <= 10) {
-                        setShowConsumerPrompt(true);
-                        return;
-                      }
-                      setQuantity((current) =>
-                        Math.max(salesMode === 'retail' ? 10 : 1, current - 1)
-                      );
-                    }}
-                    aria-label="Decrease quantity"
-                    style={{
-                      padding: '0.4rem 0.75rem',
-                      background: 'var(--ash-800)',
-                      color: 'var(--heading)',
-                      border: 'none',
-                      cursor: 'pointer',
-                      fontSize: '1rem',
-                    }}
-                  >
-                    −
-                  </button>
-                  <span
-                    style={{
-                      padding: '0.4rem 1rem',
-                      color: 'var(--heading)',
-                      fontSize: '0.9rem',
-                      minWidth: '2.5rem',
-                      textAlign: 'center',
-                    }}
-                  >
-                    {quantity}
-                  </span>
-                  <button
-                    onClick={() => {
-                      if (salesMode === 'consumer' && quantity >= 9) {
-                        setShowRetailPrompt(true);
-                        return;
-                      }
-                      setQuantity((current) =>
-                        Math.min(maximumQuantity, current + 1)
-                      );
-                    }}
-                    disabled={quantityLimitReached || retailUnavailable}
-                    aria-label="Increase quantity"
-                    style={{
-                      padding: '0.4rem 0.75rem',
-                      background: 'var(--ash-800)',
-                      color:
-                        quantityLimitReached || retailUnavailable
-                          ? 'var(--ash-600)'
-                          : 'var(--heading)',
-                      border: 'none',
-                      cursor:
-                        quantityLimitReached || retailUnavailable
-                          ? 'default'
-                          : 'pointer',
-                      fontSize: '1rem',
-                    }}
-                  >
-                    +
-                  </button>
-                </div>
-                {quantity >= maximumQuantity &&
-                  !retailUnavailable &&
-                  !(salesMode === 'consumer' && quantity >= 9) && (
-                    <span
-                      style={{
-                        color: 'var(--gold-400)',
-                        fontSize: '0.75rem',
-                        fontWeight: 600,
-                      }}
-                    >
-                      Selected all available
-                    </span>
-                  )}
-              </div>
-            )}
-
-            {retailUnavailable && (
-              <p
-                role="status"
-                style={{
-                  color: 'var(--gold-400)',
-                  lineHeight: 1.6,
-                  marginBottom: '1.25rem',
-                }}
-              >
-                Retail orders start at 10 units. There are {product.stock} listed
-                in stock, so contact us to confirm bulk availability.
-              </p>
-            )}
-
-            {product.stock === 0 ? (
-              <button
-                disabled
-                style={{
-                  width: '100%',
-                  padding: '0.875rem',
-                  borderRadius: '10px',
-                  background: 'var(--ash-800)',
-                  color: 'var(--ash-500)',
-                  border: '1px solid var(--border)',
-                  cursor: 'not-allowed',
-                  fontSize: '0.95rem',
-                  fontWeight: 600,
-                }}
-              >
-                Out of Stock
-              </button>
-            ) : retailUnavailable ? (
-              <a
-                href={`https://wa.me/${whatsappDigits}?text=${encodeURIComponent(
-                  `Hi, I would like to ask about a retail order of at least 10 ${product.name}.`
-                )}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  display: 'block',
-                  width: '100%',
-                  padding: '0.875rem',
-                  borderRadius: '10px',
-                  background: 'var(--gold-400)',
-                  color: 'var(--on-gold)',
-                  textAlign: 'center',
-                  textDecoration: 'none',
-                  fontWeight: 700,
-                }}
-              >
-                Ask about bulk availability
-              </a>
-            ) : (
-              <ShinyButton
-                onClick={addProductToCart}
-                className={added ? 'shiny-added' : ''}
-              >
-                {added ? (
-                  '✓ Added to Cart!'
-                ) : (
-                  <>
-                    <ShoppingCart
-                      size={16}
-                      style={{
-                        display: 'inline',
-                        marginRight: '0.5rem',
-                        verticalAlign: 'middle',
-                      }}
-                    />
-                    Add to Cart
-                  </>
-                )}
-              </ShinyButton>
             )}
           </div>
         </div>
@@ -771,9 +827,29 @@ export default function ProductDetailClient({
         >
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             {reviews.length === 0 ? (
-              <p style={{ color: 'var(--ash-400)' }}>
-                No reviews yet for this product. Be the first to review!
-              </p>
+              <div
+                style={{
+                  background: 'var(--surface)',
+                  padding: '1.75rem',
+                  borderRadius: '12px',
+                  border: '1px solid var(--border)',
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: '0.95rem',
+                    fontWeight: 600,
+                    color: 'var(--heading)',
+                    marginBottom: '0.4rem',
+                  }}
+                >
+                  No reviews yet
+                </div>
+                <p style={{ color: 'var(--ash-400)', fontSize: '0.875rem', lineHeight: 1.65 }}>
+                  Purchased this device from our Ikeja store or online? Share your
+                  feedback using the form to help other buyers.
+                </p>
+              </div>
             ) : (
               reviews.map((rev) => (
                 <div
@@ -796,9 +872,19 @@ export default function ProductDetailClient({
                     <strong style={{ color: 'var(--gold-400)', fontSize: '0.9rem' }}>
                       {rev.reviewer_name}
                     </strong>
-                    <span style={{ color: 'var(--gold-400)', fontSize: '0.85rem' }}>
-                      {'★'.repeat(rev.rating)}
-                      {'☆'.repeat(Math.max(0, 5 - rev.rating))}
+                    <span
+                      aria-label={`${rev.rating} out of 5 stars`}
+                      className="inline-flex items-center gap-0.5"
+                      style={{ color: 'var(--gold-400)' }}
+                    >
+                      {Array.from({ length: 5 }).map((_, idx) => (
+                        <Star
+                          key={idx}
+                          size={14}
+                          fill={idx < rev.rating ? 'currentColor' : 'none'}
+                          aria-hidden="true"
+                        />
+                      ))}
                     </span>
                   </div>
                   <p
@@ -997,13 +1083,56 @@ export default function ProductDetailClient({
             gap: 2rem !important;
           }
         }
-        .shiny-added {
-          --shiny-cta-highlight: #22c55e !important;
-          --shiny-cta-highlight-subtle: #86efac !important;
-        }
       `,
         }}
       />
+
+      {product.stock > 0 && !retailUnavailable && (
+        <div
+          className="md:hidden fixed bottom-0 left-0 right-0 z-40 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] flex items-center justify-between gap-3"
+          style={{
+            background: 'var(--surface)',
+            borderTop: '1px solid var(--border)',
+            boxShadow: '0 -8px 24px rgba(0, 0, 0, 0.28)',
+          }}
+        >
+          <div className="min-w-0">
+            <div
+              className="text-[0.65rem] uppercase tracking-[0.08em]"
+              style={{ color: 'var(--ash-400)' }}
+            >
+              {activeSalesMode === 'retail' ? 'Retail total' : 'Total'}
+            </div>
+            <div
+              className="text-base font-bold tabular-nums truncate"
+              style={{ color: 'var(--heading)' }}
+            >
+              {formatNaira(effectivePrice * quantity)}
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={addProductToCart}
+            className="px-5 py-2.5 rounded-lg font-semibold text-sm inline-flex items-center gap-1.5 shrink-0 active:scale-[0.97] transition-transform"
+            style={{
+              background: added ? '#22c55e' : 'var(--gold-fill)',
+              color: added ? '#052e16' : 'var(--on-gold-fill)',
+              border: 0,
+              cursor: 'pointer',
+            }}
+          >
+            {added ? (
+              <>
+                <Check size={15} aria-hidden="true" /> Added
+              </>
+            ) : (
+              <>
+                <ShoppingCart size={15} aria-hidden="true" /> Add to Cart
+              </>
+            )}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

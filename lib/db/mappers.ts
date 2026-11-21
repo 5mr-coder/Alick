@@ -181,15 +181,70 @@ export function formatCategoryName(slug: string): string {
   );
 }
 
+function normalizeSpecValue(key: string, rawVal: unknown): string {
+  let val = String(rawVal).trim();
+  // Remove stray unmatched closing parenthesis at end of strings like "AMD Ryzen )"
+  if (!val.includes('(') && val.endsWith(')')) {
+    val = val.slice(0, -1).trim();
+  }
+  // Normalize unit casing: 32gb -> 32GB, 1tb -> 1TB, 65w -> 65W, 20000mah -> 20000mAh
+  val = val.replace(/\b(\d+(?:\.\d+)?)\s*(gb|tb|mhz|ghz|w|mah)\b/gi, (_, num: string, unit: string) => {
+    const lower = unit.toLowerCase();
+    if (lower === 'mah') return `${num}mAh`;
+    if (lower === 'mhz') return `${num}MHz`;
+    if (lower === 'ghz') return `${num}GHz`;
+    return `${num}${lower.toUpperCase()}`;
+  });
+  if (/^(yes|true)$/i.test(val)) {
+    return key.toUpperCase() === 'ANC' ? 'Active ANC' : `${key}: Yes`;
+  }
+  return val;
+}
+
 function normalizeSpecs(raw: Record<string, unknown> | null): Record<string, string> {
   if (!raw || typeof raw !== 'object') return {};
   const result: Record<string, string> = {};
   for (const [k, v] of Object.entries(raw)) {
     if (v !== null && v !== undefined) {
-      result[k] = String(v);
+      const cleaned = normalizeSpecValue(k, v);
+      if (cleaned) {
+        result[k] = cleaned;
+      }
     }
   }
   return result;
+}
+
+const FALLBACK_PRODUCT_IMAGES: Record<string, string> = {
+  'macbook-air-m3':
+    'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=800&q=80',
+  'dell-optiplex-7010':
+    'https://images.unsplash.com/photo-1593640408182-31c70c8268f5?w=800&q=80',
+  'anker-powercore-20000':
+    'https://images.unsplash.com/photo-1609091839311-d5365f9ff1c5?w=800&q=80',
+  'asus-rog-strix':
+    'https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=800&q=80',
+};
+
+function sanitizeProductImages(slug: string, rawImages: string[] | null): string[] {
+  const images = Array.isArray(rawImages)
+    ? rawImages.filter((url) => typeof url === 'string' && url.trim().length > 0 && !url.trim().endsWith('/product-media/'))
+    : [];
+
+  if (slug === 'asus-rog-strix' || images.length === 0) {
+    return FALLBACK_PRODUCT_IMAGES[slug] ? [FALLBACK_PRODUCT_IMAGES[slug]] : images;
+  }
+
+  return images.map((url) => {
+    if (
+      (slug === 'macbook-air-m3' && url.includes('photo-1611532736597-de2d4265fba3')) ||
+      (slug === 'dell-optiplex-7010' && url.includes('photo-1588872657578-7efd1f1555ed')) ||
+      (slug === 'anker-powercore-20000' && url === '/smart-glasses.jpg')
+    ) {
+      return FALLBACK_PRODUCT_IMAGES[slug];
+    }
+    return url;
+  });
 }
 
 export function mapProductRow(
@@ -228,7 +283,7 @@ export function mapProductRow(
     brand: row.brand ?? undefined,
     model: row.model ?? undefined,
     specs: normalizeSpecs(row.specs),
-    images: Array.isArray(row.images) ? row.images : [],
+    images: sanitizeProductImages(row.slug, row.images),
     is_featured: Boolean(row.is_featured),
     is_flash_sale: hasSale,
     flash_sale_ends: hasSale ? activeSale!.ends_at : undefined,
@@ -330,6 +385,17 @@ export function mapContactMessageRow(row: ContactMessageRow): ContactMessage {
 }
 
 export function mapSiteBannerRow(row: SiteBannerRow): SiteBanner {
+  const rawMeta = (row.metadata as SiteBannerMetadata) ?? {};
+  const metadata: SiteBannerMetadata = {
+    ...rawMeta,
+    stats: Array.isArray(rawMeta.stats)
+      ? rawMeta.stats.map((s) => ({
+          ...s,
+          value: typeof s.value === 'string' ? s.value.replace(/★/g, ' / 5') : s.value,
+        }))
+      : rawMeta.stats,
+  };
+
   return {
     id: row.id,
     slot: row.slot,
@@ -338,7 +404,7 @@ export function mapSiteBannerRow(row: SiteBannerRow): SiteBanner {
     cta_text: row.cta_text,
     cta_link: row.cta_link,
     media_urls: Array.isArray(row.media_urls) ? row.media_urls : [],
-    metadata: (row.metadata as SiteBannerMetadata) ?? {},
+    metadata,
     is_active: Boolean(row.is_active),
     updated_at: row.updated_at,
   };

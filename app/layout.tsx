@@ -1,23 +1,20 @@
 import type { Metadata } from 'next';
-import { Source_Serif_4, IBM_Plex_Serif, Lora } from 'next/font/google';
+import localFont from 'next/font/local';
 import './globals.css';
 import StorefrontShell from '@/components/StorefrontShell';
 import { getPublicSiteSettings } from '@/lib/db/queries';
 
-const sourceSerif = Source_Serif_4({
-  subsets: ['latin'],
-  variable: '--font-source-serif',
+const hankenGrotesk = localFont({
+  src: './fonts/hanken-grotesk-variable-latin.woff2',
+  variable: '--font-sans',
+  weight: '100 900',
+  display: 'swap',
 });
 
-const ibmPlexSerif = IBM_Plex_Serif({
-  weight: ['400', '500', '600', '700'],
-  subsets: ['latin'],
-  variable: '--font-ibm-plex-serif',
-});
-
-const lora = Lora({
-  subsets: ['latin'],
-  variable: '--font-lora',
+const archivo = localFont({
+  src: './fonts/archivo-variable-latin.woff2',
+  variable: '--font-archivo',
+  weight: '100 900',
   display: 'swap',
 });
 
@@ -58,7 +55,7 @@ export default async function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${sourceSerif.variable} ${ibmPlexSerif.variable} ${lora.variable}`}
+      className={`${hankenGrotesk.variable} ${archivo.variable}`}
     >
       <body>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />

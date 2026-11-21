@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Star, Trash2 } from 'lucide-react';
 import type { ProductRow } from '@/lib/db/mappers';
 import {
   saveProductAction,
@@ -812,9 +812,13 @@ export default function ProductsManager({
                         marginLeft: '0.35rem',
                         fontSize: '0.72rem',
                         color: 'var(--gold-400)',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.2rem',
                       }}
                     >
-                      ★ Featured
+                      <Star size={11} fill="currentColor" aria-hidden="true" />
+                      Featured
                     </span>
                   )}
                 </td>

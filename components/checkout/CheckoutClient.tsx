@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 import { useCart } from '@/context/CartContext';
-import { ShoppingBag, ArrowLeft, ShieldAlert, Truck } from 'lucide-react';
+import { ShoppingBag, ArrowLeft, ShieldAlert, Truck, Lock } from 'lucide-react';
 import Link from 'next/link';
+import SkeletonImage from '@/components/ui/SkeletonImage';
 import type { PublicSiteSettings, ShippingZone } from '@/types';
 import { formatNaira } from '@/lib/utils';
 
@@ -327,13 +328,7 @@ export default function CheckoutClient({
                 />
               </div>
 
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: '1fr 1fr',
-                  gap: '1rem',
-                }}
-              >
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label
                     style={{
@@ -466,6 +461,7 @@ export default function CheckoutClient({
                           </div>
                         </div>
                         <span
+                          className="tabular-nums"
                           style={{
                             fontWeight: 700,
                             fontSize: '0.875rem',
@@ -508,13 +504,7 @@ export default function CheckoutClient({
                       style={inputStyle}
                     />
                   </div>
-                  <div
-                    style={{
-                      display: 'grid',
-                      gridTemplateColumns: '1fr 1fr',
-                      gap: '1rem',
-                    }}
-                  >
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label
                         style={{
@@ -611,7 +601,7 @@ export default function CheckoutClient({
             </form>
           </div>
 
-          <div>
+          <div className="lg:sticky lg:top-24">
             <div
               style={{
                 background: 'var(--surface)',
@@ -633,6 +623,7 @@ export default function CheckoutClient({
               </h3>
 
               <div
+                className="overscroll-contain"
                 style={{
                   display: 'flex',
                   flexDirection: 'column',
@@ -660,14 +651,10 @@ export default function CheckoutClient({
                       }}
                     >
                       {item.image && (
-                        <img
+                        <SkeletonImage
                           src={item.image}
                           alt={item.name}
-                          style={{
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'cover',
-                          }}
+                          loading="lazy"
                         />
                       )}
                     </div>
@@ -688,6 +675,7 @@ export default function CheckoutClient({
                       </p>
                     </div>
                     <div
+                      className="tabular-nums"
                       style={{
                         fontWeight: 600,
                         color: 'var(--gold-400)',
@@ -715,7 +703,7 @@ export default function CheckoutClient({
                   }}
                 >
                   <span style={{ color: 'var(--ash-300)' }}>Subtotal</span>
-                  <span style={{ color: 'var(--heading)' }}>
+                  <span className="tabular-nums" style={{ color: 'var(--heading)' }}>
                     {formatNaira(cartTotal)}
                   </span>
                 </div>
@@ -727,7 +715,7 @@ export default function CheckoutClient({
                   }}
                 >
                   <span style={{ color: 'var(--ash-300)' }}>Shipping</span>
-                  <span style={{ color: 'var(--heading)', fontSize: '0.9rem' }}>
+                  <span className="tabular-nums" style={{ color: 'var(--heading)', fontSize: '0.9rem' }}>
                     {shippingFee === 0 ? 'Free' : formatNaira(shippingFee)}
                   </span>
                 </div>
@@ -750,6 +738,7 @@ export default function CheckoutClient({
                     Total
                   </span>
                   <span
+                    className="tabular-nums"
                     style={{
                       color: 'var(--gold-400)',
                       fontWeight: 700,
@@ -824,6 +813,7 @@ export default function CheckoutClient({
                 form="checkout-form"
                 type="submit"
                 disabled={loading || hasMixedModes}
+                className="active:scale-[0.98] transition-transform transition-opacity"
                 style={{
                   width: '100%',
                   padding: '0.875rem',
@@ -835,12 +825,19 @@ export default function CheckoutClient({
                   border: 'none',
                   cursor: loading || hasMixedModes ? 'not-allowed' : 'pointer',
                   opacity: loading || hasMixedModes ? 0.7 : 1,
-                  transition: 'opacity 200ms ease',
-                  marginBottom: '1rem',
+                  marginBottom: '0.65rem',
                 }}
               >
                 {loading ? 'Processing...' : 'Pay Securely with Paystack'}
               </button>
+
+              <p
+                className="flex items-center justify-center gap-1.5 text-xs mb-3"
+                style={{ color: 'var(--ash-400)' }}
+              >
+                <Lock size={12} aria-hidden="true" style={{ color: 'var(--gold-400)' }} />
+                Secured by Paystack · Instant tracking code on confirmation
+              </p>
 
               <div
                 style={{

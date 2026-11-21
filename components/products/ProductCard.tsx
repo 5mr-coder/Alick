@@ -4,6 +4,7 @@ import Link from 'next/link';
 import type { Product } from '@/types';
 import { useCart } from '@/context/CartContext';
 import { formatNaira, getEffectiveUnitPrice } from '@/lib/utils';
+import SkeletonImage from '@/components/ui/SkeletonImage';
 
 interface ProductCardProps {
   product: Product;
@@ -25,10 +26,39 @@ export default function ProductCard({ product }: ProductCardProps) {
       ? Math.round(((strikePrice - effectivePrice) / strikePrice) * 100)
       : null;
 
+  // Show at most one high-signal badge so product imagery stays uncluttered
+  const primaryBadge =
+    product.stock === 0
+      ? { label: 'Out of Stock', tone: 'muted' as const }
+      : product.is_flash_sale
+        ? {
+            label: discount && discount > 0 ? `Flash · -${discount}%` : 'Flash Sale',
+            tone: 'sale' as const,
+          }
+        : discount && discount > 0
+          ? { label: `-${discount}%`, tone: 'sale' as const }
+          : product.stock > 0 && product.stock < 5
+            ? { label: `Only ${product.stock} left`, tone: 'gold' as const }
+            : product.is_featured
+              ? { label: 'Featured', tone: 'gold' as const }
+              : null;
+
   return (
-    <Link href={`/products/${product.slug}`} style={{ textDecoration: 'none' }}>
-      <article className="card" style={{ cursor: 'pointer' }}>
+    <Link
+      href={`/products/${product.slug}`}
+      style={{ textDecoration: 'none', display: 'block', height: '100%' }}
+    >
+      <article
+        className="card"
+        style={{
+          cursor: 'pointer',
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+      >
         <div
+          className="img-outline"
           style={{
             position: 'relative',
             aspectRatio: '4/3',
@@ -37,21 +67,11 @@ export default function ProductCard({ product }: ProductCardProps) {
           }}
         >
           {product.images?.[0] ? (
-            <img
+            <SkeletonImage
               src={product.images[0]}
               alt={product.name}
-              style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-                transition: 'transform 400ms ease',
-              }}
-              onMouseEnter={(e) =>
-                ((e.currentTarget as HTMLElement).style.transform = 'scale(1.06)')
-              }
-              onMouseLeave={(e) =>
-                ((e.currentTarget as HTMLElement).style.transform = 'scale(1)')
-              }
+              loading="lazy"
+              className="card-media-zoom"
             />
           ) : (
             <div
@@ -78,69 +98,50 @@ export default function ProductCard({ product }: ProductCardProps) {
             </div>
           )}
 
-          <div
-            style={{
-              position: 'absolute',
-              top: '0.75rem',
-              left: '0.75rem',
-              display: 'flex',
-              gap: '0.375rem',
-              flexWrap: 'wrap',
-            }}
-          >
-            {product.is_flash_sale && (
-              <span className="badge badge-sale">Flash Sale</span>
-            )}
-            {product.is_featured && !product.is_flash_sale && (
-              <span className="badge badge-gold">Featured</span>
-            )}
-            {(discount ?? 0) > 0 && (
-              <span className="badge badge-sale">-{discount}%</span>
-            )}
-            {product.stock > 0 && product.stock < 5 && (
-              <span
-                style={{
-                  fontSize: '0.65rem',
-                  fontWeight: 700,
-                  padding: '0.2rem 0.5rem',
-                  borderRadius: '4px',
-                  background: 'rgba(245,200,66,0.12)',
-                  color: 'var(--gold-400)',
-                  border: '1px solid var(--border-gold)',
-                  letterSpacing: '0.05em',
-                  textTransform: 'uppercase',
-                }}
-              >
-                Low Stock
-              </span>
-            )}
-            {product.stock === 0 && (
-              <span
-                style={{
-                  fontSize: '0.65rem',
-                  fontWeight: 700,
-                  padding: '0.2rem 0.5rem',
-                  borderRadius: '4px',
-                  background: 'rgba(34,211,238,0.12)',
-                  color: 'var(--cyan-400)',
-                  border: '1px solid var(--cyan-glow)',
-                  letterSpacing: '0.05em',
-                  textTransform: 'uppercase',
-                }}
-              >
-                Out of Stock
-              </span>
-            )}
-          </div>
+          {primaryBadge && (
+            <div
+              style={{
+                position: 'absolute',
+                top: '0.75rem',
+                left: '0.75rem',
+              }}
+            >
+              {primaryBadge.tone === 'sale' && (
+                <span className="badge badge-sale tabular-nums">{primaryBadge.label}</span>
+              )}
+              {primaryBadge.tone === 'gold' && (
+                <span className="badge badge-gold tabular-nums">{primaryBadge.label}</span>
+              )}
+              {primaryBadge.tone === 'muted' && (
+                <span
+                  className="badge"
+                  style={{
+                    background: 'rgba(13, 20, 36, 0.84)',
+                    color: '#e2e8f0',
+                    border: '1px solid rgba(157, 176, 210, 0.25)',
+                  }}
+                >
+                  {primaryBadge.label}
+                </span>
+              )}
+            </div>
+          )}
         </div>
 
-        <div style={{ padding: '1rem' }}>
+        <div
+          style={{
+            padding: '1rem 1.125rem 1.125rem',
+            display: 'flex',
+            flexDirection: 'column',
+            flex: 1,
+          }}
+        >
           {product.brand && (
             <div
               style={{
-                fontSize: '0.7rem',
+                fontSize: '0.68rem',
                 fontWeight: 600,
-                color: 'var(--gold-400)',
+                color: 'var(--ash-400)',
                 letterSpacing: '0.1em',
                 textTransform: 'uppercase',
                 marginBottom: '0.25rem',
@@ -167,7 +168,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             {product.name}
           </h3>
 
-          {product.specs && (
+          {product.specs && Object.keys(product.specs).length > 0 && (
             <div
               style={{
                 display: 'flex',
@@ -181,6 +182,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                 .map(([key, val]) => (
                   <span
                     key={key}
+                    className="truncate max-w-[140px]"
                     style={{
                       fontSize: '0.7rem',
                       padding: '0.2rem 0.5rem',
@@ -196,19 +198,31 @@ export default function ProductCard({ product }: ProductCardProps) {
             </div>
           )}
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <div
+            style={{
+              marginTop: 'auto',
+              paddingTop: '0.25rem',
+              display: 'flex',
+              alignItems: 'baseline',
+              gap: '0.5rem',
+              flexWrap: 'wrap',
+            }}
+          >
             <span
+              className="tabular-nums"
               style={{
                 fontFamily: 'var(--font-display)',
                 fontSize: '1.125rem',
                 fontWeight: 700,
-                color: 'var(--gold-400)',
+                letterSpacing: '-0.02em',
+                color: 'var(--heading)',
               }}
             >
               {formatNaira(effectivePrice)}
             </span>
             {strikePrice > 0 && (
               <span
+                className="tabular-nums"
                 style={{
                   fontSize: '0.8125rem',
                   color: 'var(--ash-500)',

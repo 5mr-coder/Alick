@@ -1,8 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import { Search, Zap } from 'lucide-react';
 import AnimatedSection from '@/components/ui/AnimatedSection';
 import ProductCard from '@/components/products/ProductCard';
+import SkeletonImage from '@/components/ui/SkeletonImage';
 import { useCart } from '@/context/CartContext';
 import ShopModePicker from '@/components/shop/ShopModePicker';
 import type { Product } from '@/types';
@@ -21,9 +23,11 @@ export default function SmartGadgetsClient({
   gadgets: Product[];
 }) {
   const { salesMode, setSalesMode, isLoaded } = useCart();
+  const activeSalesMode = salesMode ?? 'consumer';
   const [activeBrand, setActiveBrand] = useState('All');
   const [sortBy, setSortBy] = useState('Newest');
   const [showFlash, setShowFlash] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const safeBrands = [
     'All',
@@ -32,20 +36,28 @@ export default function SmartGadgetsClient({
     ),
   ];
 
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+
   const filtered = gadgets
     .filter((p) => (activeBrand === 'All' ? true : p.brand === activeBrand))
     .filter((p) => (showFlash ? p.is_flash_sale : true))
+    .filter((p) => {
+      if (!normalizedQuery) return true;
+      const specValues = p.specs ? Object.values(p.specs).join(' ') : '';
+      const haystack = `${p.name} ${p.brand || ''} ${p.model || ''} ${specValues}`.toLowerCase();
+      return haystack.includes(normalizedQuery);
+    })
     .sort((a, b) => {
       if (sortBy === 'Price: Low to High') {
         return (
-          getEffectiveUnitPrice(a, salesMode) -
-          getEffectiveUnitPrice(b, salesMode)
+          getEffectiveUnitPrice(a, activeSalesMode) -
+          getEffectiveUnitPrice(b, activeSalesMode)
         );
       }
       if (sortBy === 'Price: High to Low') {
         return (
-          getEffectiveUnitPrice(b, salesMode) -
-          getEffectiveUnitPrice(a, salesMode)
+          getEffectiveUnitPrice(b, activeSalesMode) -
+          getEffectiveUnitPrice(a, activeSalesMode)
         );
       }
       if (sortBy === 'Featured') {
@@ -56,36 +68,24 @@ export default function SmartGadgetsClient({
       );
     });
 
-  if (!isLoaded) return null;
-  if (!salesMode)
-    return <ShopModePicker mode={salesMode} onChange={setSalesMode} />;
-
   return (
     <>
-      <div className="container" style={{ paddingTop: '1.5rem' }}>
-        <ShopModePicker mode={salesMode} onChange={setSalesMode} compact />
-      </div>
-
       <section
         className="force-dark"
         style={{
           position: 'relative',
-          padding: '5rem 0 4rem',
+          padding: '4rem 0 3.25rem',
           overflow: 'hidden',
           borderBottom: '1px solid var(--border)',
         }}
       >
         <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
-          <img
+          <SkeletonImage
             src="/smart-glasses.jpg"
             alt=""
-            aria-hidden
-            style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              filter: 'brightness(0.15)',
-            }}
+            ariaHidden
+            loading="eager"
+            style={{ filter: 'brightness(0.15)' }}
           />
           <div
             style={{
@@ -98,55 +98,73 @@ export default function SmartGadgetsClient({
         </div>
 
         <div className="container" style={{ position: 'relative', zIndex: 1 }}>
-          <AnimatedSection style={{ maxWidth: '580px' }}>
-            <div className="section-label">The future is now</div>
-            <h1 className="section-heading">Smart Gadgets</h1>
-            <p
-              style={{
-                color: 'var(--ash-400)',
-                marginTop: '0.75rem',
-                fontSize: '0.9375rem',
-                lineHeight: 1.7,
-              }}
-            >
-              Earbuds, smartwatches, power banks, accessories — everything to
-              elevate your tech lifestyle.
-            </p>
-            <div
-              style={{
-                marginTop: '1.5rem',
-                display: 'flex',
-                gap: '0.75rem',
-                flexWrap: 'wrap',
-              }}
-            >
-              <span
-                style={{
-                  padding: '0.35rem 0.875rem',
-                  borderRadius: '999px',
-                  background: 'rgba(212,160,23,0.1)',
-                  border: '1px solid rgba(212,160,23,0.25)',
-                  color: 'var(--gold-400)',
-                  fontSize: '0.8rem',
-                  fontWeight: 600,
-                }}
-              >
-                {gadgets.length} gadgets available
-              </span>
-              <span
-                style={{
-                  padding: '0.35rem 0.875rem',
-                  borderRadius: '999px',
-                  background: 'rgba(34,211,238,0.1)',
-                  border: '1px solid var(--cyan-glow)',
-                  color: 'var(--cyan-400)',
-                  fontSize: '0.8rem',
-                  fontWeight: 600,
-                }}
-              >
-                ⚡ {gadgets.filter((g) => g.is_flash_sale).length} Flash Sale
-                items
-              </span>
+          <AnimatedSection>
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+              <div style={{ maxWidth: '580px' }}>
+                <div className="section-label">The future is now</div>
+                <h1 className="section-heading">Smart Gadgets</h1>
+                <p
+                  style={{
+                    color: 'var(--ash-400)',
+                    marginTop: '0.75rem',
+                    fontSize: '0.9375rem',
+                    lineHeight: 1.7,
+                  }}
+                >
+                  Earbuds, smartwatches, power banks, accessories — everything to
+                  elevate your tech lifestyle.
+                </p>
+                <div
+                  style={{
+                    marginTop: '1.5rem',
+                    display: 'flex',
+                    gap: '0.75rem',
+                    flexWrap: 'wrap',
+                  }}
+                >
+                  <span
+                    className="tabular-nums"
+                    style={{
+                      padding: '0.35rem 0.875rem',
+                      borderRadius: '999px',
+                      background: 'rgba(212,160,23,0.1)',
+                      border: '1px solid rgba(212,160,23,0.25)',
+                      color: 'var(--gold-400)',
+                      fontSize: '0.8rem',
+                      fontWeight: 600,
+                    }}
+                  >
+                    {gadgets.length} gadgets available
+                  </span>
+                  <span
+                    className="tabular-nums inline-flex items-center gap-1.5"
+                    style={{
+                      padding: '0.35rem 0.875rem',
+                      borderRadius: '999px',
+                      background: 'rgba(34,211,238,0.1)',
+                      border: '1px solid var(--cyan-glow)',
+                      color: 'var(--cyan-400)',
+                      fontSize: '0.8rem',
+                      fontWeight: 600,
+                    }}
+                  >
+                    <Zap size={13} aria-hidden="true" />
+                    {(() => {
+                      const flashCount = gadgets.filter((g) => g.is_flash_sale).length;
+                      return `${flashCount} Flash Sale ${flashCount === 1 ? 'item' : 'items'}`;
+                    })()}
+                  </span>
+                </div>
+              </div>
+              {isLoaded && (
+                <div className="shrink-0">
+                  <ShopModePicker
+                    mode={activeSalesMode}
+                    onChange={setSalesMode}
+                    compact
+                  />
+                </div>
+              )}
             </div>
           </AnimatedSection>
         </div>
@@ -222,6 +240,7 @@ export default function SmartGadgetsClient({
                   ))}
                   <button
                     onClick={() => setShowFlash(!showFlash)}
+                    className="inline-flex items-center gap-1.5"
                     style={{
                       padding: '0.35rem 0.875rem',
                       borderRadius: '6px',
@@ -229,7 +248,7 @@ export default function SmartGadgetsClient({
                       fontWeight: 600,
                       border: '1px solid',
                       cursor: 'pointer',
-                      transition: 'all 200ms ease',
+                      transition: 'background-color 180ms ease, color 180ms ease, border-color 180ms ease',
                       background: showFlash
                         ? 'rgba(34,211,238,0.12)'
                         : 'transparent',
@@ -239,27 +258,56 @@ export default function SmartGadgetsClient({
                         : 'var(--border)',
                     }}
                   >
-                    ⚡ Flash Sale
+                    <Zap size={13} aria-hidden="true" />
+                    Flash Sale
                   </button>
                 </div>
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  style={{
-                    background: 'var(--surface)',
-                    color: 'var(--ash-200)',
-                    border: '1px solid var(--border)',
-                    borderRadius: '8px',
-                    padding: '0.4rem 0.875rem',
-                    fontSize: '0.8125rem',
-                    cursor: 'pointer',
-                    outline: 'none',
-                  }}
-                >
-                  {sortOptions.map((o) => (
-                    <option key={o}>{o}</option>
-                  ))}
-                </select>
+                <div className="flex flex-wrap items-center gap-2.5">
+                  <div className="relative min-w-[190px]">
+                    <Search
+                      size={14}
+                      aria-hidden="true"
+                      className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
+                      style={{ color: 'var(--ash-500)' }}
+                    />
+                    <input
+                      type="search"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Search gadgets..."
+                      aria-label="Search gadgets"
+                      style={{
+                        width: '100%',
+                        background: 'var(--surface)',
+                        color: 'var(--heading)',
+                        border: '1px solid var(--border)',
+                        borderRadius: '8px',
+                        padding: '0.4rem 0.75rem 0.4rem 2rem',
+                        fontSize: '0.8125rem',
+                        outline: 'none',
+                      }}
+                    />
+                  </div>
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    aria-label="Sort gadgets"
+                    style={{
+                      background: 'var(--surface)',
+                      color: 'var(--ash-200)',
+                      border: '1px solid var(--border)',
+                      borderRadius: '8px',
+                      padding: '0.4rem 0.875rem',
+                      fontSize: '0.8125rem',
+                      cursor: 'pointer',
+                      outline: 'none',
+                    }}
+                  >
+                    {sortOptions.map((o) => (
+                      <option key={o}>{o}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
           </AnimatedSection>

@@ -1,13 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { Zap } from 'lucide-react';
 import AnimatedSection from '@/components/ui/AnimatedSection';
 import ProductCard from '@/components/products/ProductCard';
 import Button from '@/components/ui/Button';
 import type { Product } from '@/types';
 
 function useCountdown(targetIso: string | null) {
-  const [timeLeft, setTimeLeft] = useState({ h: 0, m: 0, s: 0, expired: false });
+  const [timeLeft, setTimeLeft] = useState({ d: 0, h: 0, m: 0, s: 0, expired: false });
 
   useEffect(() => {
     if (!targetIso) return;
@@ -16,13 +17,14 @@ function useCountdown(targetIso: string | null) {
     const tick = () => {
       const diff = endTime - Date.now();
       if (diff <= 0) {
-        setTimeLeft({ h: 0, m: 0, s: 0, expired: true });
+        setTimeLeft({ d: 0, h: 0, m: 0, s: 0, expired: true });
         return;
       }
-      const h = Math.floor(diff / 3600000);
+      const d = Math.floor(diff / 86400000);
+      const h = Math.floor((diff % 86400000) / 3600000);
       const m = Math.floor((diff % 3600000) / 60000);
       const s = Math.floor((diff % 60000) / 1000);
-      setTimeLeft({ h, m, s, expired: false });
+      setTimeLeft({ d, h, m, s, expired: false });
     };
 
     tick();
@@ -80,7 +82,7 @@ export default function FlashSales({
   products: Product[];
   endsAt: string | null;
 }) {
-  const { h, m, s, expired } = useCountdown(endsAt);
+  const { d, h, m, s, expired } = useCountdown(endsAt);
 
   if (products.length === 0 || expired) {
     return null;
@@ -121,14 +123,34 @@ export default function FlashSales({
             </div>
             <h2
               className="section-heading"
-              style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}
+              style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}
             >
-              ⚡ Flash Sales
+              <Zap
+                size={26}
+                aria-hidden="true"
+                style={{ color: 'var(--gold-400)', flexShrink: 0 }}
+              />
+              Flash Sales
             </h2>
           </div>
 
           {endsAt && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              {d > 0 && (
+                <>
+                  <Segment value={d} label="Days" />
+                  <span
+                    style={{
+                      color: 'var(--gold-400)',
+                      fontWeight: 700,
+                      fontSize: '1.2rem',
+                      marginBottom: '1.2rem',
+                    }}
+                  >
+                    :
+                  </span>
+                </>
+              )}
               <Segment value={h} label="Hrs" />
               <span
                 style={{

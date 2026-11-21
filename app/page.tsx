@@ -1,4 +1,5 @@
 import HeroParallax from '@/components/home/HeroParallax';
+import TrustStrip from '@/components/home/TrustStrip';
 import FeaturedProducts from '@/components/home/FeaturedProducts';
 import FlashSales from '@/components/home/FlashSales';
 import CategoryGrid from '@/components/home/CategoryGrid';
@@ -24,7 +25,7 @@ export default async function HomePage() {
       getFeaturedProducts(),
       getFlashSaleProducts(),
       getActiveServices(),
-      getPublishedBlogPosts({ featuredOnly: true, limit: 3 }),
+      getPublishedBlogPosts({ limit: 3 }),
       getPublicSiteSettings(),
     ]);
 
@@ -34,6 +35,7 @@ export default async function HomePage() {
   return (
     <>
       <HeroParallax banner={banner} />
+      <TrustStrip />
       <FeaturedProducts products={featured} />
       <FlashSales products={flashData.products} endsAt={flashData.earliestEnd} />
       <CategoryGrid />

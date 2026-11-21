@@ -1,5 +1,7 @@
+import { Check } from 'lucide-react';
 import AnimatedSection from '@/components/ui/AnimatedSection';
 import Button from '@/components/ui/Button';
+import SkeletonImage from '@/components/ui/SkeletonImage';
 import { ServiceIcon } from '@/components/home/ServicesPreview';
 import { getActiveServices, getPublicSiteSettings } from '@/lib/db/queries';
 import { formatNaira } from '@/lib/utils';
@@ -50,16 +52,12 @@ export default async function ServicesPage() {
         }}
       >
         <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
-          <img
+          <SkeletonImage
             src="https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=1400&q=80"
             alt=""
-            aria-hidden
-            style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              filter: 'brightness(0.12)',
-            }}
+            ariaHidden
+            loading="eager"
+            style={{ filter: 'brightness(0.12)' }}
           />
           <div
             style={{
@@ -113,13 +111,7 @@ export default async function ServicesPage() {
 
       <section className="section">
         <div className="container">
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-              gap: '1.5rem',
-            }}
-          >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {services.map((service, i) => (
               <AnimatedSection key={service.id} delay={i * 90}>
                 <div
@@ -202,9 +194,11 @@ export default async function ServicesPage() {
                           color: 'var(--ash-300)',
                         }}
                       >
-                        <span style={{ color: 'var(--gold-400)', fontWeight: 700 }}>
-                          ✓
-                        </span>{' '}
+                        <Check
+                          size={14}
+                          style={{ color: 'var(--gold-400)', flexShrink: 0 }}
+                          aria-hidden="true"
+                        />
                         {f}
                       </li>
                     ))}

@@ -78,7 +78,7 @@ export default function FlashSalesManager({
         ? meta.stats
         : [
             { value: '500+', label: 'Products Sold' },
-            { value: '4.9★', label: 'Customer Rating' },
+            { value: '4.9 / 5', label: 'Customer Rating' },
             { value: '24hr', label: 'Repair Turnaround' },
           ],
     isActive: initialBanner?.is_active ?? true,

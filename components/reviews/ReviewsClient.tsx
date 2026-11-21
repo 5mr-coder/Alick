@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import AnimatedSection from '@/components/ui/AnimatedSection';
+import SkeletonImage from '@/components/ui/SkeletonImage';
 import type { Review } from '@/types';
 import { submitReview } from '@/lib/actions/public';
 
@@ -111,28 +112,19 @@ export default function ReviewsClient({ reviews }: { reviews: Review[] }) {
                   >
                     {review.image_url && (
                       <div
+                        className="img-outline"
                         style={{
                           overflow: 'hidden',
                           borderRadius: '14px 14px 0 0',
+                          height: '240px',
                         }}
                       >
-                        <img
+                        <SkeletonImage
                           src={review.image_url}
                           alt={`Review by ${review.reviewer_name}`}
-                          style={{
-                            width: '100%',
-                            maxHeight: '260px',
-                            objectFit: 'cover',
-                            objectPosition: 'top',
-                            display: 'block',
-                            transition: 'transform 400ms ease',
-                          }}
-                          onMouseEnter={(e) =>
-                            (e.currentTarget.style.transform = 'scale(1.03)')
-                          }
-                          onMouseLeave={(e) =>
-                            (e.currentTarget.style.transform = 'scale(1)')
-                          }
+                          loading="lazy"
+                          className="card-media-zoom"
+                          style={{ objectPosition: 'top' }}
                         />
                       </div>
                     )}

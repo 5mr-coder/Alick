@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import AnimatedSection from '@/components/ui/AnimatedSection';
+import SkeletonImage from '@/components/ui/SkeletonImage';
 
 const categories = [
   {
@@ -63,37 +64,13 @@ export default function CategoryGrid() {
             <AnimatedSection key={cat.label} delay={i * 70}>
               <Link
                 href={cat.href}
-                className="force-dark"
-                style={{
-                  display: 'block',
-                  position: 'relative',
-                  borderRadius: '12px',
-                  overflow: 'hidden',
-                  aspectRatio: '4/3',
-                  textDecoration: 'none',
-                  border: '1px solid var(--border)',
-                  transition: 'border-color 250ms ease, transform 250ms ease',
-                }}
-                onMouseEnter={(e) => {
-                  const el = e.currentTarget as HTMLElement;
-                  el.style.borderColor = 'var(--border-gold)';
-                  el.style.transform = 'translateY(-4px)';
-                }}
-                onMouseLeave={(e) => {
-                  const el = e.currentTarget as HTMLElement;
-                  el.style.borderColor = 'var(--border)';
-                  el.style.transform = 'none';
-                }}
+                className="force-dark cat-tile img-outline"
               >
-                <img
+                <SkeletonImage
                   src={cat.image}
                   alt={cat.label}
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                    filter: 'brightness(0.5)',
-                  }}
+                  loading="lazy"
+                  style={{ filter: 'brightness(0.5)' }}
                 />
                 <div
                   style={{

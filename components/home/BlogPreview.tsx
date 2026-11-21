@@ -2,6 +2,7 @@
 
 import AnimatedSection from '@/components/ui/AnimatedSection';
 import Button from '@/components/ui/Button';
+import SkeletonImage from '@/components/ui/SkeletonImage';
 import Link from 'next/link';
 import type { BlogPost } from '@/types';
 
@@ -74,32 +75,21 @@ export default function BlogPreview({ posts }: { posts: BlogPost[] }) {
                   }}
                 >
                   <div
+                    className="img-outline"
                     style={{
                       aspectRatio: '16/9',
                       overflow: 'hidden',
                       background: 'var(--ash-800)',
                     }}
                   >
-                    <img
+                    <SkeletonImage
                       src={
                         post.cover_image ||
                         'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=700&q=80'
                       }
                       alt={post.title}
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover',
-                        transition: 'transform 400ms ease',
-                      }}
-                      onMouseEnter={(e) =>
-                        ((e.currentTarget as HTMLElement).style.transform =
-                          'scale(1.05)')
-                      }
-                      onMouseLeave={(e) =>
-                        ((e.currentTarget as HTMLElement).style.transform =
-                          'scale(1)')
-                      }
+                      loading="lazy"
+                      className="card-media-zoom"
                     />
                   </div>
                   <div
@@ -128,6 +118,7 @@ export default function BlogPreview({ posts }: { posts: BlogPost[] }) {
                           day: 'numeric',
                           month: 'short',
                           year: 'numeric',
+                          timeZone: 'UTC',
                         })}
                       </span>
                     </div>

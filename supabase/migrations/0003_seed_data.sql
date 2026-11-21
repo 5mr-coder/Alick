@@ -81,7 +81,7 @@ VALUES (
     'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=800&q=80',
     'https://images.unsplash.com/photo-1629131726692-1accd0c53ce0?w=800&q=80'
   ],
-  '{"label": "Smart Tech. Sharp Deals.", "stats": [{"value": "500+", "label": "Products Sold"}, {"value": "4.9★", "label": "Customer Rating"}, {"value": "24hr", "label": "Repair Turnaround"}], "secondary_cta": {"text": "Our Services", "link": "/services"}}'::jsonb,
+  '{"label": "Smart Tech. Sharp Deals.", "stats": [{"value": "500+", "label": "Products Sold"}, {"value": "4.9 / 5", "label": "Customer Rating"}, {"value": "24hr", "label": "Repair Turnaround"}], "secondary_cta": {"text": "Our Services", "link": "/services"}}'::jsonb,
   true
 )
 ON CONFLICT (slot) DO NOTHING;
@@ -144,7 +144,7 @@ VALUES
    'Apple silicon at its finest — silent, fast, and incredibly efficient.',
    'laptops', ARRAY['laptops', 'apple'], 155000000, NULL, NULL, 100,
    '{"RAM": "16GB", "Storage": "512GB SSD", "Processor": "Apple M3"}'::jsonb,
-   ARRAY['https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=600&q=80'],
+   ARRAY['https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=800&q=80'],
    true, true),
 
   ('hp-prodesk-400-g9', 'HP ProDesk 400 G9 SFF', 'HP', 'ProDesk 400 G9',
@@ -158,7 +158,7 @@ VALUES
    'Reliable business desktop with room for upgrades — ideal for offices and cyber cafés.',
    'desktops', ARRAY['desktops', 'dell'], 51000000, NULL, NULL, 22,
    '{"RAM": "16GB", "Storage": "256GB SSD", "Processor": "Intel i5"}'::jsonb,
-   ARRAY['https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=600&q=80'],
+   ARRAY['https://images.unsplash.com/photo-1593640408182-31c70c8268f5?w=800&q=80'],
    false, true),
 
   ('lenovo-thinkcentre-m70q', 'Lenovo ThinkCentre M70q Tiny', 'Lenovo', 'ThinkCentre M70q',
@@ -186,7 +186,7 @@ VALUES
    'High-capacity power bank with fast charging for laptops, phones, and tablets.',
    'smart-gadgets', ARRAY['smart-gadgets', 'anker'], 4800000, NULL, NULL, 60,
    '{"Capacity": "20,000mAh", "Output": "65W", "Ports": "2x USB-C"}'::jsonb,
-   ARRAY['/smart-glasses.jpg'],
+   ARRAY['https://images.unsplash.com/photo-1609091839311-d5365f9ff1c5?w=800&q=80'],
    false, true)
 ON CONFLICT (slug) DO NOTHING;
 
@@ -304,16 +304,16 @@ VALUES
   ('macbook-air-m3-vs-windows-ultrabooks', 'MacBook Air M3 vs Windows ultrabooks',
    'An honest comparison of battery life, performance, and value before you spend big on a new ultrabook.',
    '<p>An honest comparison of battery life, performance, and value before you spend big on a new ultrabook.</p>',
-   'https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=600&q=80',
+   'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=800&q=80',
    'Alick System Services', 'Buying Guide', ARRAY['macbook', 'comparison'],
-   false, true, timestamptz '2026-01-15T00:00:00Z'),
+   true, true, timestamptz '2026-01-15T00:00:00Z'),
 
   ('keep-laptop-cool-nigerian-heat', 'Keep your laptop cool in Nigerian heat',
    'Simple tips to stop overheating, extend battery life, and avoid costly repairs in a hot climate.',
    '<p>Simple tips to stop overheating, extend battery life, and avoid costly repairs in a hot climate.</p>',
    'https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=600&q=80',
    'Alick System Services', 'Tech Tips', ARRAY['cooling', 'maintenance'],
-   false, true, timestamptz '2026-01-20T00:00:00Z')
+   true, true, timestamptz '2026-01-20T00:00:00Z')
 ON CONFLICT (slug) DO NOTHING;
 
 -- ============================================================================

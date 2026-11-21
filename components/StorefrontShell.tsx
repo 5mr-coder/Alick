@@ -5,7 +5,6 @@ import { usePathname } from 'next/navigation';
 import Navbar from '@/components/ui/Navbar';
 import Footer from '@/components/Footer';
 import CartSidebar from '@/components/ui/CartSidebar';
-import SiteIntro from '@/components/ui/SiteIntro';
 import { CartProvider } from '@/context/CartContext';
 import type { PublicSiteSettings } from '@/types';
 
@@ -28,7 +27,6 @@ export default function StorefrontShell({
 
   return (
     <>
-      <SiteIntro />
       <CartProvider>
         <Navbar />
         <main style={{ paddingTop: '72px' }}>{children}</main>

@@ -59,7 +59,37 @@ const Button: React.FC<ButtonProps> = ({
     </>
   );
 
-  const buttonElement = (
+  const baseLinkClass =
+    'relative inline-flex cursor-pointer touch-manipulation select-none items-center justify-center overflow-hidden rounded-xl border-[0.5px] font-medium text-[15px] tracking-[-0.02em] no-underline transition-colors transition-transform duration-200 active:scale-[0.985] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background';
+
+  if (href) {
+    const linkClasses = cn(
+      baseLinkClass,
+      variantClasses[variant],
+      sizeClasses[size],
+      className
+    );
+    if (href.startsWith('http') || href.startsWith('mailto') || href.startsWith('tel')) {
+      return (
+        <a
+          href={href}
+          className={linkClasses}
+          target={href.startsWith('http') ? '_blank' : undefined}
+          rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
+        >
+          {content}
+        </a>
+      );
+    }
+
+    return (
+      <Link href={href} className={linkClasses}>
+        {content}
+      </Link>
+    );
+  }
+
+  return (
     <OriginButton
       className={cn(
         variantClasses[variant],
@@ -72,24 +102,6 @@ const Button: React.FC<ButtonProps> = ({
       {content}
     </OriginButton>
   );
-
-  if (href) {
-    if (href.startsWith('http') || href.startsWith('mailto') || href.startsWith('tel')) {
-      return (
-        <a href={href} className="inline-block" style={{ textDecoration: 'none' }}>
-          {buttonElement}
-        </a>
-      );
-    }
-
-    return (
-      <Link href={href} className="inline-block" style={{ textDecoration: 'none' }}>
-        {buttonElement}
-      </Link>
-    );
-  }
-
-  return buttonElement;
 };
 
 export default Button;

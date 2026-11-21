@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Mail } from 'lucide-react';
+import { Mail, Star } from 'lucide-react';
 import type { ContactMessageRow, ReviewRow } from '@/lib/db/mappers';
 import {
   deleteContactMessageAction,
@@ -137,8 +137,18 @@ export default function ReviewsMessagesManager({
                     <strong style={{ color: 'var(--heading)' }}>
                       {r.author_name}
                     </strong>
-                    <span style={{ color: 'var(--gold-400)', fontSize: '0.85rem' }}>
-                      {'★'.repeat(r.rating)}
+                    <span
+                      aria-label={`${r.rating} out of 5 stars`}
+                      style={{
+                        color: 'var(--gold-400)',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.15rem',
+                      }}
+                    >
+                      {Array.from({ length: r.rating }).map((_, idx) => (
+                        <Star key={idx} size={13} fill="currentColor" aria-hidden="true" />
+                      ))}
                     </span>
                     <span
                       style={{

@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { AlertTriangle, Check } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { formatNaira } from '@/lib/utils';
 
@@ -174,7 +175,11 @@ function CheckoutSuccessInner() {
                 fontSize: '1.75rem',
               }}
             >
-              {state === 'confirmed' ? '✓' : '!'}
+              {state === 'confirmed' ? (
+                <Check size={28} color="#4ade80" aria-hidden="true" />
+              ) : (
+                <AlertTriangle size={28} color="var(--gold-400)" aria-hidden="true" />
+              )}
             </div>
             <h1
               style={{

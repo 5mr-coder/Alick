@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { CheckCircle2, Clock, Mail, MapPin, Phone } from 'lucide-react';
 import AnimatedSection from '@/components/ui/AnimatedSection';
 import Button from '@/components/ui/Button';
 import type { PublicSiteSettings } from '@/types';
@@ -123,31 +124,31 @@ export default function ContactClient({
               >
                 {[
                   {
-                    icon: '📍',
+                    Icon: MapPin,
                     title: 'Visit Our Store',
                     lines: [settings.address],
                   },
                   {
-                    icon: '📞',
+                    Icon: Phone,
                     title: 'Call or WhatsApp',
                     lines: [settings.phone],
                   },
                   {
-                    icon: '✉️',
+                    Icon: Mail,
                     title: 'Email Us',
                     lines: [settings.email],
                   },
                   {
-                    icon: '🕐',
+                    Icon: Clock,
                     title: 'Opening Hours',
                     lines: [
                       'Mon – Sat: 9:00 AM – 6:00 PM',
                       'Sunday: 12:00 PM – 4:00 PM',
                     ],
                   },
-                ].map((item) => (
+                ].map(({ Icon, title, lines }) => (
                   <div
-                    key={item.title}
+                    key={title}
                     className="card"
                     style={{
                       padding: '1.25rem',
@@ -156,8 +157,21 @@ export default function ContactClient({
                       alignItems: 'flex-start',
                     }}
                   >
-                    <div style={{ fontSize: '1.5rem', flexShrink: 0 }}>
-                      {item.icon}
+                    <div
+                      style={{
+                        width: '38px',
+                        height: '38px',
+                        borderRadius: '10px',
+                        background: 'rgba(212,160,23,0.1)',
+                        border: '1px solid rgba(212,160,23,0.2)',
+                        color: 'var(--gold-400)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                      }}
+                    >
+                      <Icon size={18} aria-hidden="true" />
                     </div>
                     <div>
                       <div
@@ -170,9 +184,9 @@ export default function ContactClient({
                           marginBottom: '0.375rem',
                         }}
                       >
-                        {item.title}
+                        {title}
                       </div>
-                      {item.lines.map((line) => (
+                      {lines.map((line) => (
                         <div
                           key={line}
                           style={{
@@ -263,8 +277,20 @@ export default function ContactClient({
 
                 {status === 'success' ? (
                   <div style={{ textAlign: 'center', padding: '2rem' }}>
-                    <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>
-                      ✅
+                    <div
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '56px',
+                        height: '56px',
+                        borderRadius: '999px',
+                        background: 'rgba(34, 197, 94, 0.14)',
+                        color: '#4ade80',
+                        marginBottom: '1rem',
+                      }}
+                    >
+                      <CheckCircle2 size={28} aria-hidden="true" />
                     </div>
                     <h3
                       style={{ color: 'var(--heading)', marginBottom: '0.5rem' }}

@@ -8,15 +8,19 @@ import { ShoppingCart } from 'lucide-react';
 import { SunMoonThemeToggle } from './sun-moon-theme-toggle';
 
 const navLinks = [
-  { label: 'Home',          href: '/' },
   { label: 'Laptops',       href: '/products' },
   { label: 'Desktops',      href: '/desktops' },
   { label: 'Smart Gadgets', href: '/smart-gadgets' },
-  { label: 'About',         href: '/about' },
-  { label: 'Reviews',       href: '/reviews' },
   { label: 'Services',      href: '/services' },
+  { label: 'Reviews',       href: '/reviews' },
   { label: 'Blog',          href: '/blog' },
-  { label: 'Contact',       href: '/contact' },
+  { label: 'About',         href: '/about' },
+];
+
+const mobileNavLinks = [
+  { label: 'Home',          href: '/' },
+  ...navLinks,
+  { label: 'Track Order',   href: '/orders/track' },
 ];
 
 export default function Navbar() {
@@ -35,15 +39,17 @@ export default function Navbar() {
 
   const cartBadge = (
     <span
+      className="tabular-nums"
       style={{
         position: 'absolute',
         top: '-6px',
         right: '-6px',
         background: 'var(--gold-400)',
         color: 'var(--on-gold)',
-        borderRadius: '50%',
-        width: '18px',
+        borderRadius: '999px',
+        minWidth: '18px',
         height: '18px',
+        padding: '0 4px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -65,11 +71,12 @@ export default function Navbar() {
           left: 0,
           right: 0,
           zIndex: 50,
-          transition: 'all 300ms ease',
+          transition: 'background-color 220ms var(--ease-out), border-color 220ms var(--ease-out)',
           background: 'var(--header-background)',
-          backdropFilter: 'blur(16px)',
+          backdropFilter: 'blur(18px) saturate(160%)',
+          WebkitBackdropFilter: 'blur(18px) saturate(160%)',
           borderBottom: '1px solid var(--header-border)',
-          boxShadow: '0 2px 20px rgba(0,0,0,0.4)',
+          boxShadow: '0 1px 0 var(--header-border), 0 8px 24px rgba(0,0,0,0.16)',
         }}
       >
         <div
@@ -84,13 +91,14 @@ export default function Navbar() {
           }}
         >
 
-          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', textDecoration: 'none' }}>
+          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', textDecoration: 'none' }}>
             <div
               style={{
-                width: '40px',
-                height: '40px',
+                width: '36px',
+                height: '36px',
                 borderRadius: '8px',
                 background: '#ffffff',
+                border: '1px solid var(--header-border)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -101,7 +109,7 @@ export default function Navbar() {
               <img
                 src="/logo.png"
                 alt="Alick System Services"
-                style={{ width: '36px', height: '36px', objectFit: 'contain' }}
+                style={{ width: '30px', height: '30px', objectFit: 'contain' }}
               />
             </div>
             <div>
@@ -150,14 +158,13 @@ export default function Navbar() {
                       fontWeight: isActiveRoute ? 600 : 500,
                       textDecoration: 'none',
                       color: isActiveRoute ? 'var(--gold-400)' : (isHovered ? 'var(--header-foreground)' : 'var(--header-muted)'),
-                      transition: 'all 250ms ease',
+                      transition: 'color 180ms var(--ease-out)',
                       letterSpacing: '0.01em',
                       position: 'relative',
-                      transform: isHovered ? 'translateY(-2px)' : 'translateY(0)',
+                      WebkitTapHighlightColor: 'transparent',
                     }}
                   >
                     {link.label}
-
 
                     <div
                       style={{
@@ -168,7 +175,7 @@ export default function Navbar() {
                         width: isHovered || isActiveRoute ? '100%' : '0%',
                         height: '2px',
                         background: 'var(--gold-400)',
-                        transition: 'width 250ms ease',
+                        transition: 'width 200ms var(--ease-out)',
                         borderRadius: '2px',
                       }}
                     />
@@ -208,8 +215,8 @@ export default function Navbar() {
               href="/contact"
               style={{
                 padding: '0.5rem 1.125rem',
-                background: 'var(--gold-400)',
-                color: 'var(--on-gold)',
+                background: 'var(--gold-fill)',
+                color: 'var(--on-gold-fill)',
                 borderRadius: '8px',
                 fontSize: '0.875rem',
                 fontWeight: 600,
@@ -274,10 +281,13 @@ export default function Navbar() {
               background: 'var(--header-background)',
               borderTop: '1px solid var(--header-border)',
               padding: '1rem 1.5rem 1.5rem',
+              maxHeight: 'calc(100dvh - 72px)',
+              overflowY: 'auto',
+              overscrollBehavior: 'contain',
             }}
           >
             <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-              {navLinks.map((link) => {
+              {mobileNavLinks.map((link) => {
                 const active = pathname === link.href || (link.href !== '/' && pathname.startsWith(link.href));
                 return (
                   <li key={link.href}>
@@ -307,8 +317,8 @@ export default function Navbar() {
                   style={{
                     display: 'block',
                     padding: '0.75rem 1rem',
-                    background: 'var(--gold-400)',
-                    color: 'var(--on-gold)',
+                    background: 'var(--gold-fill)',
+                    color: 'var(--on-gold-fill)',
                     borderRadius: '8px',
                     fontSize: '1rem',
                     fontWeight: 600,

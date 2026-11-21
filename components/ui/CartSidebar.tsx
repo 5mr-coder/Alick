@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useCart, type CartItem } from '@/context/CartContext';
 import { X, Minus, Plus, ShoppingCart } from 'lucide-react';
-import { OriginButton } from './origin-button';
+import SkeletonImage from './SkeletonImage';
 import { formatNaira } from '@/lib/utils';
 
 export default function CartSidebar() {
@@ -31,25 +31,50 @@ export default function CartSidebar() {
         className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 transition-opacity"
         onClick={() => setIsCartOpen(false)}
       />
-      <div className="fixed right-0 top-0 h-full w-full max-w-md bg-card text-card-foreground shadow-2xl z-50 flex flex-col transform transition-transform duration-300 ease-in-out border-l border-border">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Shopping cart"
+        className="fixed right-0 top-0 h-full w-full max-w-md bg-card text-card-foreground shadow-2xl z-50 flex flex-col transform transition-transform duration-300 ease-out border-l border-border"
+      >
         <div className="flex items-center justify-between p-4 border-b border-border bg-muted/50">
           <h2 className="text-xl font-semibold flex items-center gap-2">
             <ShoppingCart className="w-5 h-5" /> Your Cart
           </h2>
           <button
             onClick={() => setIsCartOpen(false)}
-            className="p-2 rounded-full hover:bg-muted transition-colors"
+            className="p-2 rounded-full hover:bg-muted active:scale-[0.96] transition-transform transition-colors"
             aria-label="Close cart"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4">
+        <div className="flex-1 overflow-y-auto overscroll-contain p-4 flex flex-col gap-4">
           {items.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
-              <ShoppingCart className="w-16 h-16 mb-4 opacity-20" />
-              <p>Your cart is empty.</p>
+            <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground gap-3 px-6">
+              <ShoppingCart className="w-14 h-14 mb-1 opacity-25" />
+              <p className="text-base font-medium text-foreground">Your cart is empty</p>
+              <p className="text-sm text-muted-foreground">
+                Explore laptops, desktops, and smart gadgets to get started.
+              </p>
+              <div className="flex flex-wrap gap-2 mt-2 justify-center">
+                <Link
+                  href="/products"
+                  onClick={() => setIsCartOpen(false)}
+                  className="px-4 py-2 rounded-lg text-sm font-semibold no-underline transition-opacity hover:opacity-90"
+                  style={{ background: 'var(--gold-400)', color: 'var(--on-gold)' }}
+                >
+                  Browse Laptops
+                </Link>
+                <Link
+                  href="/orders/track"
+                  onClick={() => setIsCartOpen(false)}
+                  className="px-4 py-2 rounded-lg text-sm font-medium border border-border text-foreground no-underline hover:bg-muted transition-colors"
+                >
+                  Track Order
+                </Link>
+              </div>
             </div>
           ) : (
             items.map((item) => (
@@ -58,10 +83,12 @@ export default function CartSidebar() {
                 className="flex gap-4 p-3 rounded-lg border border-border bg-background shadow-sm relative group"
               >
                 {item.image ? (
-                  <img
+                  <SkeletonImage
                     src={item.image}
                     alt={item.name}
-                    className="w-20 h-20 object-cover rounded-md border border-border"
+                    loading="lazy"
+                    wrapperClassName="rounded-md border border-border shrink-0"
+                    wrapperStyle={{ width: '5rem', height: '5rem' }}
                   />
                 ) : (
                   <div className="w-20 h-20 rounded-md border border-border bg-muted flex items-center justify-center text-xs text-muted-foreground">
@@ -75,7 +102,7 @@ export default function CartSidebar() {
                     </h3>
                     <p
                       style={{ color: 'var(--gold-400)' }}
-                      className="font-semibold mt-1"
+                      className="font-semibold mt-1 tabular-nums"
                     >
                       {formatNaira(item.price)}
                     </p>
@@ -106,7 +133,7 @@ export default function CartSidebar() {
                     >
                       <Minus className="w-4 h-4" />
                     </button>
-                    <span className="text-sm font-medium w-6 text-center">
+                    <span className="text-sm font-medium w-6 text-center tabular-nums">
                       {item.quantity}
                     </span>
                     <button
@@ -157,7 +184,7 @@ export default function CartSidebar() {
                 </div>
                 <button
                   onClick={() => removeFromCart(item.id, item.salesMode)}
-                  className="absolute top-2 right-2 p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md transition-colors opacity-0 group-hover:opacity-100"
+                  className="absolute top-2 right-2 p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md transition-opacity transition-colors opacity-70 md:opacity-0 md:group-hover:opacity-100 focus-visible:opacity-100"
                   aria-label={`Remove ${item.name}`}
                 >
                   <X className="w-4 h-4" />
@@ -171,16 +198,18 @@ export default function CartSidebar() {
           <div className="p-6 border-t border-border bg-muted/30">
             <div className="flex justify-between items-center mb-6">
               <span className="text-muted-foreground font-medium">Subtotal</span>
-              <span className="text-2xl font-bold">{formatNaira(cartTotal)}</span>
+              <span className="text-2xl font-bold tabular-nums">{formatNaira(cartTotal)}</span>
             </div>
             <Link
               href="/checkout"
-              style={{ display: 'block', width: '100%', textDecoration: 'none' }}
               onClick={() => setIsCartOpen(false)}
+              className="flex h-12 w-full items-center justify-center rounded-xl px-6 font-semibold text-[15px] no-underline transition-opacity hover:opacity-90 active:scale-[0.985]"
+              style={{
+                background: 'var(--gold-fill)',
+                color: 'var(--on-gold-fill)',
+              }}
             >
-              <OriginButton className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
-                Proceed to Checkout
-              </OriginButton>
+              Proceed to Checkout
             </Link>
           </div>
         )}

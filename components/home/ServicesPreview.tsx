@@ -2,6 +2,7 @@
 
 import AnimatedSection from '@/components/ui/AnimatedSection';
 import Button from '@/components/ui/Button';
+import { formatNaira } from '@/lib/utils';
 import type { Service } from '@/types';
 
 export function ServiceIcon({ name }: { name?: string }) {
@@ -91,63 +92,79 @@ export default function ServicesPreview({ services }: { services: Service[] }) {
           </p>
         </AnimatedSection>
 
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
-            gap: '1.25rem',
-          }}
-        >
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {services.slice(0, 4).map((service, i) => (
             <AnimatedSection key={service.id} delay={i * 80}>
               <div
-                className="card"
+                className="card flex flex-col justify-between"
                 style={{ padding: '1.75rem', height: '100%' }}
-                onMouseEnter={(e) => {
-                  const el = e.currentTarget as HTMLElement;
-                  el.style.borderColor = 'rgba(212,160,23,0.4)';
-                }}
-                onMouseLeave={(e) => {
-                  const el = e.currentTarget as HTMLElement;
-                  el.style.borderColor = 'var(--border)';
-                }}
               >
-                <div
-                  style={{
-                    width: '52px',
-                    height: '52px',
-                    borderRadius: '12px',
-                    background: 'rgba(212,160,23,0.1)',
-                    border: '1px solid rgba(212,160,23,0.2)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: 'var(--gold-400)',
-                    marginBottom: '1.25rem',
-                  }}
-                >
-                  <ServiceIcon name={service.icon} />
+                <div>
+                  <div className="flex items-center justify-between gap-2 mb-5">
+                    <div
+                      style={{
+                        width: '48px',
+                        height: '48px',
+                        borderRadius: '10px',
+                        background: 'rgba(212,160,23,0.1)',
+                        border: '1px solid rgba(212,160,23,0.2)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'var(--gold-400)',
+                      }}
+                    >
+                      <ServiceIcon name={service.icon} />
+                    </div>
+                    <span
+                      className="tabular-nums text-[0.7rem] font-semibold tracking-[0.14em]"
+                      style={{ color: 'var(--ash-500)' }}
+                    >
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                  </div>
+                  <h3
+                    style={{
+                      fontFamily: 'var(--font-body)',
+                      fontSize: '1rem',
+                      fontWeight: 700,
+                      color: 'var(--heading)',
+                      marginBottom: '0.5rem',
+                    }}
+                  >
+                    {service.title}
+                  </h3>
+                  <p
+                    style={{
+                      fontSize: '0.875rem',
+                      color: 'var(--ash-400)',
+                      lineHeight: 1.65,
+                    }}
+                  >
+                    {service.description}
+                  </p>
                 </div>
-                <h3
-                  style={{
-                    fontFamily: 'var(--font-body)',
-                    fontSize: '1rem',
-                    fontWeight: 700,
-                    color: 'var(--heading)',
-                    marginBottom: '0.625rem',
-                  }}
-                >
-                  {service.title}
-                </h3>
-                <p
-                  style={{
-                    fontSize: '0.875rem',
-                    color: 'var(--ash-400)',
-                    lineHeight: 1.65,
-                  }}
-                >
-                  {service.description}
-                </p>
+
+                {(service.price_from != null || service.turnaround) && (
+                  <div
+                    className="mt-5 pt-3.5 flex items-center justify-between gap-2 text-xs"
+                    style={{ borderTop: '1px solid var(--border)' }}
+                  >
+                    <span
+                      className="font-semibold tabular-nums"
+                      style={{ color: 'var(--gold-400)' }}
+                    >
+                      {service.price_from != null
+                        ? `From ${formatNaira(service.price_from)}`
+                        : 'Custom quote'}
+                    </span>
+                    {service.turnaround && (
+                      <span style={{ color: 'var(--ash-500)' }}>
+                        {service.turnaround}
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
             </AnimatedSection>
           ))}

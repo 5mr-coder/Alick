@@ -1,3 +1,4 @@
+import { Check } from 'lucide-react';
 import AnimatedSection from '@/components/ui/AnimatedSection';
 import Button from '@/components/ui/Button';
 
@@ -63,8 +64,8 @@ export default function AboutPage() {
                   'Customer-focused service and satisfaction.',
                   'Reliable solutions for students, individuals, and businesses.',
                 ].map((item) => (
-                  <li key={item} style={{ display: 'flex', gap: '1rem', color: 'var(--ash-300)', lineHeight: 1.7, fontSize: '1.0625rem' }}>
-                    <span style={{ color: 'var(--gold-400)', fontWeight: 700, flexShrink: 0 }}>✓</span>
+                  <li key={item} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'var(--ash-300)', lineHeight: 1.7, fontSize: '1.0625rem' }}>
+                    <Check size={17} style={{ color: 'var(--gold-400)', flexShrink: 0 }} aria-hidden="true" />
                     <span>{item}</span>
                   </li>
                 ))}

@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { MapPin, Phone, Mail } from 'lucide-react';
 import type { PublicSiteSettings } from '@/types';
 
 const footerLinks = {
@@ -39,15 +40,8 @@ export default function Footer({ settings }: { settings?: PublicSiteSettings }) 
       }}
     >
       <div className="container">
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-            gap: '2.5rem',
-            marginBottom: '3rem',
-          }}
-        >
-          <div style={{ gridColumn: 'span 2' }}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-10 mb-12">
+          <div className="sm:col-span-2">
             <div
               style={{
                 display: 'flex',
@@ -58,10 +52,11 @@ export default function Footer({ settings }: { settings?: PublicSiteSettings }) 
             >
               <div
                 style={{
-                  width: '40px',
-                  height: '40px',
+                  width: '36px',
+                  height: '36px',
                   borderRadius: '8px',
                   background: '#ffffff',
+                  border: '1px solid var(--border)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -71,7 +66,7 @@ export default function Footer({ settings }: { settings?: PublicSiteSettings }) 
                 <img
                   src="/logo.png"
                   alt={siteName}
-                  style={{ width: '36px', objectFit: 'contain' }}
+                  style={{ width: '30px', height: '30px', objectFit: 'contain' }}
                 />
               </div>
               <div>
@@ -85,16 +80,7 @@ export default function Footer({ settings }: { settings?: PublicSiteSettings }) 
                 >
                   Alick
                 </div>
-                <div
-                  style={{
-                    fontSize: '0.65rem',
-                    color: 'var(--gold-400)',
-                    letterSpacing: '0.12em',
-                    textTransform: 'uppercase',
-                  }}
-                >
-                  System Services
-                </div>
+                <span className="brand-tagline">System Services</span>
               </div>
             </div>
             <p
@@ -109,32 +95,25 @@ export default function Footer({ settings }: { settings?: PublicSiteSettings }) 
               {tagline} Your trusted source for laptops, repairs, and gadgets in
               Lagos.
             </p>
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '0.5rem',
-              }}
-            >
-              {[
-                { icon: '📍', text: address },
-                { icon: '📞', text: phone },
-                { icon: '✉️', text: email },
-              ].map((item) => (
-                <div
-                  key={item.text}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    gap: '0.5rem',
-                    fontSize: '0.8125rem',
-                    color: 'var(--ash-400)',
-                  }}
-                >
-                  <span>{item.icon}</span>
-                  <span>{item.text}</span>
-                </div>
-              ))}
+            <div className="flex flex-col gap-2.5 text-[0.8125rem]" style={{ color: 'var(--ash-400)' }}>
+              <div className="flex items-start gap-2">
+                <MapPin size={15} className="shrink-0 mt-0.5" style={{ color: 'var(--gold-400)' }} aria-hidden="true" />
+                <span>{address}</span>
+              </div>
+              <a
+                href={`tel:${phone.replace(/[^\d+]/g, '')}`}
+                className="footer-link inline-flex items-center gap-2 tabular-nums"
+              >
+                <Phone size={15} className="shrink-0" style={{ color: 'var(--gold-400)' }} aria-hidden="true" />
+                <span>{phone}</span>
+              </a>
+              <a
+                href={`mailto:${email}`}
+                className="footer-link inline-flex items-center gap-2"
+              >
+                <Mail size={15} className="shrink-0" style={{ color: 'var(--gold-400)' }} aria-hidden="true" />
+                <span>{email}</span>
+              </a>
             </div>
           </div>
 
@@ -164,23 +143,7 @@ export default function Footer({ settings }: { settings?: PublicSiteSettings }) 
               >
                 {links.map((link) => (
                   <li key={link.href}>
-                    <Link
-                      href={link.href}
-                      style={{
-                        fontSize: '0.875rem',
-                        color: 'var(--ash-400)',
-                        textDecoration: 'none',
-                        transition: 'color 200ms ease',
-                      }}
-                      onMouseEnter={(e) =>
-                        ((e.currentTarget as HTMLElement).style.color =
-                          'var(--heading)')
-                      }
-                      onMouseLeave={(e) =>
-                        ((e.currentTarget as HTMLElement).style.color =
-                          'var(--ash-400)')
-                      }
-                    >
+                    <Link href={link.href} className="footer-link">
                       {link.label}
                     </Link>
                   </li>
@@ -206,30 +169,7 @@ export default function Footer({ settings }: { settings?: PublicSiteSettings }) 
               href={`https://wa.me/${whatsappDigits}`}
               target="_blank"
               rel="noopener noreferrer"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                padding: '0.625rem 1.125rem',
-                borderRadius: '8px',
-                background: 'var(--cyan-400)',
-                color: 'var(--on-cyan)',
-                fontSize: '0.875rem',
-                fontWeight: 600,
-                textDecoration: 'none',
-                transition: 'all 250ms ease',
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.background =
-                  'var(--cyan-500)';
-                (e.currentTarget as HTMLElement).style.transform =
-                  'translateY(-2px)';
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLElement).style.background =
-                  'var(--cyan-400)';
-                (e.currentTarget as HTMLElement).style.transform = 'none';
-              }}
+              className="footer-wa-btn"
             >
               <svg
                 width="18"

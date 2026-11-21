@@ -4,6 +4,7 @@ import ReactMarkdown from 'react-markdown';
 import rehypeSanitize from 'rehype-sanitize';
 import AnimatedSection from '@/components/ui/AnimatedSection';
 import Button from '@/components/ui/Button';
+import SkeletonImage from '@/components/ui/SkeletonImage';
 import {
   getPublicSiteSettings,
   getPublishedBlogPostBySlug,
@@ -50,18 +51,14 @@ export default async function BlogPostPage({
         className="force-dark"
         style={{ position: 'relative', height: '420px', overflow: 'hidden' }}
       >
-        <img
+        <SkeletonImage
           src={
             post.cover_image ||
             'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=1200&q=80'
           }
           alt={post.title}
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            filter: 'brightness(0.22)',
-          }}
+          loading="eager"
+          style={{ filter: 'brightness(0.22)' }}
         />
         <div
           style={{
